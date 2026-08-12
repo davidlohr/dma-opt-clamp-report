@@ -1,0 +1,57 @@
+From: Davidlohr Bueso <dave@stgolabs.net>
+Subject: [PATCH 1/2] block: let drivers cap the default max_sectors
+
+Drivers can currently bound request sizes from above only through
+max_hw_sectors, a hard ceiling that also takes away the
+administrator's ability to raise max_sectors_kb beyond it. There is
+no way to express the policy "requests above size X are possible and
+sometimes profitable, but not a good default": commit 37105615f731
+("block: don't reduce max_sectors based on io_opt") deliberately
+stopped small io_opt values from lowering the default, and
+max_user_sectors belongs to the sysfs write path.
+
+Add queue_limits.max_default_sectors, honored only in the fallback
+branch of the max_sectors computation as a driver-supplied
+alternative to BLK_DEF_MAX_SECTORS_CAP. It can only lower the
+default, never raise it above the cap, and an explicit user setting
+(max_user_sectors) continues to take precedence up to
+max_hw_sectors. Stacked devices inherit its effect through the
+computed max_sectors as usual.
+
+The immediate user is nvme-pci, which wants to stop hard-capping
+max_hw_sectors at dma_opt_mapping_size() while keeping today's
+default request size on translated IOMMU domains.
+
+Signed-off-by: Davidlohr Bueso <dave@stgolabs.net>
+---
+ block/blk-settings.c   | 4 +++-
+ include/linux/blkdev.h | 1 +
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/block/blk-settings.c b/block/blk-settings.c
+--- a/block/blk-settings.c
++++ b/block/blk-settings.c
+@@ -413,7 +413,9 @@ static int blk_validate_limits(struct queue_limits *lim)
+ 		lim->max_sectors =
+ 			min(max_hw_sectors, lim->io_min >> SECTOR_SHIFT);
+ 	} else {
+-		lim->max_sectors = min(max_hw_sectors, BLK_DEF_MAX_SECTORS_CAP);
++		lim->max_sectors = min(max_hw_sectors,
++				min_not_zero(lim->max_default_sectors,
++					     BLK_DEF_MAX_SECTORS_CAP));
+ 	}
+ 	lim->max_sectors = round_down(lim->max_sectors,
+ 			logical_block_sectors);
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -390,6 +390,7 @@ struct queue_limits {
+ 	unsigned int		chunk_sectors;
+ 	unsigned int		max_sectors;
+ 	unsigned int		max_user_sectors;
++	unsigned int		max_default_sectors;
+ 	unsigned int		max_segment_size;
+ 	unsigned int		max_fast_segment_size;
+ 	unsigned int		physical_block_size;
+--
+2.47.3

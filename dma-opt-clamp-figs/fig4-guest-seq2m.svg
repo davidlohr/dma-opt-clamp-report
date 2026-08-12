@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="212" viewBox="0 0 760 212" font-family="system-ui, -apple-system, sans-serif">
+<rect width="760" height="212" fill="#fcfcfb" stroke="#e0dedb"/>
+<text x="20" y="28" font-size="14" font-weight="600" fill="#0b0b0b">KVM guest (emulated VT-d, RAM-backed NVMe): seq 2MB QD8 (MiB/s)</text>
+<defs><pattern id="tex" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill-opacity="0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fcfcfb" stroke-width="2.5"/></pattern></defs>
+<line x1="190.0" y1="56" x2="190.0" y2="182" stroke="#eceae6"/>
+<text x="190.0" y="198" font-size="10" fill="#52514e" text-anchor="middle">0</text>
+<line x1="350.0" y1="56" x2="350.0" y2="182" stroke="#eceae6"/>
+<text x="350.0" y="198" font-size="10" fill="#52514e" text-anchor="middle">10,000</text>
+<line x1="510.0" y1="56" x2="510.0" y2="182" stroke="#eceae6"/>
+<text x="510.0" y="198" font-size="10" fill="#52514e" text-anchor="middle">20,000</text>
+<line x1="670.0" y1="56" x2="670.0" y2="182" stroke="#eceae6"/>
+<text x="670.0" y="198" font-size="10" fill="#52514e" text-anchor="middle">30,000</text>
+<text x="430" y="210" font-size="10" fill="#52514e" text-anchor="middle">MiB/s</text>
+<text x="182" y="73.5" font-size="11" fill="#0b0b0b" text-anchor="end">base</text>
+<path d="M190.0,62.0 h88.5 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-88.5 z" fill="#2a78d6"/>
+<text x="288.5" y="73.5" font-size="10.5" fill="#52514e">5,782</text>
+<text x="182" y="102.5" font-size="11" fill="#0b0b0b" text-anchor="end">reshaped, default</text>
+<path d="M190.0,91.0 h87.8 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-87.8 z" fill="#1baf7a"/>
+<text x="287.8" y="102.5" font-size="10.5" fill="#52514e">5,740</text>
+<text x="182" y="131.5" font-size="11" fill="#0b0b0b" text-anchor="end">reshaped, opt-in</text>
+<path d="M190.0,120.0 h432.1 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-432.1 z" fill="#eda100"/>
+<text x="632.1" y="131.5" font-size="10.5" fill="#52514e">27,258</text>
+<text x="682.1" y="131.5" font-size="10.5" font-weight="600" fill="#0b0b0b">+371%</text>
+<text x="182" y="160.5" font-size="11" fill="#0b0b0b" text-anchor="end">original patch</text>
+<path d="M190.0,149.0 h433.7 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-433.7 z" fill="#eb6834"/>
+<text x="633.7" y="160.5" font-size="10.5" fill="#52514e">27,354</text>
+<line x1="190" y1="56" x2="190" y2="182" stroke="#52514e"/>
+</svg>

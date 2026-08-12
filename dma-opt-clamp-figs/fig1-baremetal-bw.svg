@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="326" viewBox="0 0 760 326" font-family="system-ui, -apple-system, sans-serif">
+<rect width="760" height="326" fill="#fcfcfb" stroke="#e0dedb"/>
+<text x="20" y="28" font-size="14" font-weight="600" fill="#0b0b0b">Bare metal, translated IOMMU: read bandwidth (MiB/s, medians n=6)</text>
+<defs><pattern id="tex" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill-opacity="0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fcfcfb" stroke-width="2.5"/></pattern></defs>
+<rect x="190" y="40" width="10" height="10" rx="2" fill="#2a78d6"/>
+<text x="205" y="49" font-size="11" fill="#52514e">base (128KB cap)</text>
+<rect x="342.2" y="40" width="10" height="10" rx="2" fill="#eb6834"/>
+<text x="357.2" y="49" font-size="11" fill="#52514e">358580dd598b (2MB)</text>
+<line x1="190.0" y1="56" x2="190.0" y2="296" stroke="#eceae6"/>
+<text x="190.0" y="312" font-size="10" fill="#52514e" text-anchor="middle">0</text>
+<line x1="327.1" y1="56" x2="327.1" y2="296" stroke="#eceae6"/>
+<text x="327.1" y="312" font-size="10" fill="#52514e" text-anchor="middle">2,000</text>
+<line x1="464.3" y1="56" x2="464.3" y2="296" stroke="#eceae6"/>
+<text x="464.3" y="312" font-size="10" fill="#52514e" text-anchor="middle">4,000</text>
+<line x1="601.4" y1="56" x2="601.4" y2="296" stroke="#eceae6"/>
+<text x="601.4" y="312" font-size="10" fill="#52514e" text-anchor="middle">6,000</text>
+<text x="430" y="324" font-size="10" fill="#52514e" text-anchor="middle">MiB/s</text>
+<text x="182" y="82.0" font-size="11" fill="#0b0b0b" text-anchor="end">seq 2MB QD8</text>
+<path d="M190.0,62.0 h449.1 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-449.1 z" fill="#2a78d6"/>
+<text x="649.1" y="73.5" font-size="10.5" fill="#52514e">6,607</text>
+<path d="M190.0,79.0 h413.1 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-413.1 z" fill="#eb6834"/>
+<text x="613.1" y="90.5" font-size="10.5" fill="#52514e">6,083</text>
+<text x="656.1" y="90.5" font-size="10.5" font-weight="600" fill="#0b0b0b">−7.9%</text>
+<text x="182" y="128.0" font-size="11" fill="#0b0b0b" text-anchor="end">seq 2MB QD32×4</text>
+<path d="M190.0,108.0 h453.8 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-453.8 z" fill="#2a78d6"/>
+<text x="653.8" y="119.5" font-size="10.5" fill="#52514e">6,676</text>
+<path d="M190.0,125.0 h416.5 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-416.5 z" fill="#eb6834"/>
+<text x="616.5" y="136.5" font-size="10.5" fill="#52514e">6,132</text>
+<text x="659.5" y="136.5" font-size="10.5" font-weight="600" fill="#0b0b0b">−8.1%</text>
+<text x="182" y="174.0" font-size="11" fill="#0b0b0b" text-anchor="end">rand 1MB QD16</text>
+<path d="M190.0,154.0 h449.1 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-449.1 z" fill="#2a78d6"/>
+<text x="649.1" y="165.5" font-size="10.5" fill="#52514e">6,608</text>
+<path d="M190.0,171.0 h445.1 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-445.1 z" fill="#eb6834"/>
+<text x="645.1" y="182.5" font-size="10.5" fill="#52514e">6,549</text>
+<text x="182" y="220.0" font-size="11" fill="#0b0b0b" text-anchor="end">rand 512K QD32</text>
+<path d="M190.0,200.0 h449.1 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-449.1 z" fill="#2a78d6"/>
+<text x="649.1" y="211.5" font-size="10.5" fill="#52514e">6,607</text>
+<path d="M190.0,217.0 h449.4 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-449.4 z" fill="#eb6834"/>
+<text x="649.4" y="228.5" font-size="10.5" fill="#52514e">6,612</text>
+<text x="182" y="266.0" font-size="11" fill="#0b0b0b" text-anchor="end">rand 128K QD32 (guard)</text>
+<path d="M190.0,246.0 h438.5 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-438.5 z" fill="#2a78d6"/>
+<text x="638.5" y="257.5" font-size="10.5" fill="#52514e">6,453</text>
+<path d="M190.0,263.0 h438.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-438.6 z" fill="#eb6834"/>
+<text x="638.6" y="274.5" font-size="10.5" fill="#52514e">6,455</text>
+<line x1="190" y1="56" x2="190" y2="296" stroke="#52514e"/>
+</svg>

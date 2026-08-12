@@ -1,0 +1,18 @@
+GATE kver=7.2.0-rc1-iovaopt md0_max_hw=4096 nvme0_max_hw=4096
+FILE ready 31G
+PHASE micron msk=128 (nvme0=128 md0=128)
+RESULT case=m128.seq2m_qd8 rep=1 bw_MiBps=9079 iops=4539 p50_us=1794 p99_us=2507 sys=24.7
+RESULT case=m128.rand512k_qd32 rep=1 bw_MiBps=6341 iops=12681 p50_us=2507 p99_us=4555 sys=26.2
+RESULT case=m128.seq2m_qd8 rep=2 bw_MiBps=9077 iops=4538 p50_us=1794 p99_us=2507 sys=24.5
+RESULT case=m128.rand512k_qd32 rep=2 bw_MiBps=6341 iops=12680 p50_us=2507 p99_us=4555 sys=26.5
+RESULT case=m128.seq2m_qd8 rep=3 bw_MiBps=9078 iops=4539 p50_us=1794 p99_us=2507 sys=24.7
+RESULT case=m128.rand512k_qd32 rep=3 bw_MiBps=6354 iops=12706 p50_us=2507 p99_us=4555 sys=26.4
+PHASE micron msk=4096 (nvme0=4096 md0=4096)
+RESULT case=m4096.seq2m_qd8 rep=1 bw_MiBps=9105 iops=4552 p50_us=1827 p99_us=2572 sys=6.9
+RESULT case=m4096.rand512k_qd32 rep=1 bw_MiBps=6337 iops=12673 p50_us=2540 p99_us=4555 sys=16.8
+RESULT case=m4096.seq2m_qd8 rep=2 bw_MiBps=9107 iops=4553 p50_us=1827 p99_us=2572 sys=6.8
+RESULT case=m4096.rand512k_qd32 rep=2 bw_MiBps=6330 iops=12658 p50_us=2540 p99_us=4555 sys=17.1
+RESULT case=m4096.seq2m_qd8 rep=3 bw_MiBps=9109 iops=4554 p50_us=1827 p99_us=2572 sys=6.9
+RESULT case=m4096.rand512k_qd32 rep=3 bw_MiBps=6336 iops=12669 p50_us=2540 p99_us=4555 sys=17.0
+PHASE micron msk=128 (nvme0=128 md0=128)
+MICRON_DONE

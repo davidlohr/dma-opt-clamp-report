@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="326" viewBox="0 0 760 326" font-family="system-ui, -apple-system, sans-serif">
+<rect width="760" height="326" fill="#fcfcfb" stroke="#e0dedb"/>
+<text x="20" y="28" font-size="14" font-weight="600" fill="#0b0b0b">Completion cost: NVMe interrupts per GiB read (medians n=6)</text>
+<defs><pattern id="tex" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill-opacity="0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fcfcfb" stroke-width="2.5"/></pattern></defs>
+<rect x="190" y="40" width="10" height="10" rx="2" fill="#2a78d6"/>
+<text x="205" y="49" font-size="11" fill="#52514e">base (128KB cap)</text>
+<rect x="342.2" y="40" width="10" height="10" rx="2" fill="#eb6834"/>
+<text x="357.2" y="49" font-size="11" fill="#52514e">358580dd598b (2MB)</text>
+<line x1="190.0" y1="56" x2="190.0" y2="296" stroke="#eceae6"/>
+<text x="190.0" y="312" font-size="10" fill="#52514e" text-anchor="middle">0</text>
+<line x1="304.3" y1="56" x2="304.3" y2="296" stroke="#eceae6"/>
+<text x="304.3" y="312" font-size="10" fill="#52514e" text-anchor="middle">2,500</text>
+<line x1="418.6" y1="56" x2="418.6" y2="296" stroke="#eceae6"/>
+<text x="418.6" y="312" font-size="10" fill="#52514e" text-anchor="middle">5,000</text>
+<line x1="532.9" y1="56" x2="532.9" y2="296" stroke="#eceae6"/>
+<text x="532.9" y="312" font-size="10" fill="#52514e" text-anchor="middle">7,500</text>
+<line x1="647.1" y1="56" x2="647.1" y2="296" stroke="#eceae6"/>
+<text x="647.1" y="312" font-size="10" fill="#52514e" text-anchor="middle">10,000</text>
+<text x="430" y="324" font-size="10" fill="#52514e" text-anchor="middle">interrupts / GiB</text>
+<text x="182" y="82.0" font-size="11" fill="#0b0b0b" text-anchor="end">seq 2MB QD8</text>
+<path d="M190.0,62.0 h424.0 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-424.0 z" fill="#2a78d6"/>
+<text x="624.0" y="73.5" font-size="10.5" fill="#52514e">9,362</text>
+<path d="M190.0,79.0 h22.9 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-22.9 z" fill="#eb6834"/>
+<text x="222.9" y="90.5" font-size="10.5" fill="#52514e">589</text>
+<text x="251.9" y="90.5" font-size="10.5" font-weight="600" fill="#0b0b0b">−93.7%</text>
+<text x="182" y="128.0" font-size="11" fill="#0b0b0b" text-anchor="end">seq 2MB QD32×4</text>
+<path d="M190.0,108.0 h424.8 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-424.8 z" fill="#2a78d6"/>
+<text x="624.8" y="119.5" font-size="10.5" fill="#52514e">9,379</text>
+<path d="M190.0,125.0 h22.9 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-22.9 z" fill="#eb6834"/>
+<text x="222.9" y="136.5" font-size="10.5" fill="#52514e">589</text>
+<text x="182" y="174.0" font-size="11" fill="#0b0b0b" text-anchor="end">rand 1MB QD16</text>
+<path d="M190.0,154.0 h423.2 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-423.2 z" fill="#2a78d6"/>
+<text x="623.2" y="165.5" font-size="10.5" fill="#52514e">9,345</text>
+<path d="M190.0,171.0 h49.7 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-49.7 z" fill="#eb6834"/>
+<text x="249.7" y="182.5" font-size="10.5" fill="#52514e">1,175</text>
+<text x="182" y="220.0" font-size="11" fill="#0b0b0b" text-anchor="end">rand 512K QD32</text>
+<path d="M190.0,200.0 h422.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-422.6 z" fill="#2a78d6"/>
+<text x="622.6" y="211.5" font-size="10.5" fill="#52514e">9,332</text>
+<path d="M190.0,217.0 h103.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-103.6 z" fill="#eb6834"/>
+<text x="303.6" y="228.5" font-size="10.5" fill="#52514e">2,353</text>
+<text x="346.6" y="228.5" font-size="10.5" font-weight="600" fill="#0b0b0b">−74.8%</text>
+<text x="182" y="266.0" font-size="11" fill="#0b0b0b" text-anchor="end">rand 128K QD32 (guard)</text>
+<path d="M190.0,246.0 h421.4 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-421.4 z" fill="#2a78d6"/>
+<text x="621.4" y="257.5" font-size="10.5" fill="#52514e">9,306</text>
+<path d="M190.0,263.0 h421.4 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-421.4 z" fill="#eb6834"/>
+<text x="621.4" y="274.5" font-size="10.5" fill="#52514e">9,305</text>
+<line x1="190" y1="56" x2="190" y2="296" stroke="#52514e"/>
+</svg>

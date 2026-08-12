@@ -1,0 +1,132 @@
+From: Davidlohr Bueso <dave@stgolabs.net>
+Subject: [PATCH 2/2] nvme-pci: cap the default transfer size at the DMA-optimal size
+
+Commit 3710e2b056cb ("nvme-pci: clamp max_hw_sectors based on DMA
+optimized limitation") capped the transfer size at
+dma_opt_mapping_size() so that per-IO IOVA allocations stay within
+the IOVA range cache: on a translated IOMMU domain that is 128KB
+(the largest rcache size class), and anything larger allocates and
+frees its IOVA through the global rbtree lock, which was the
+scalability wall the clamp avoided.
+
+The cost model inverted when
+commit 7ce3c1dd78fc ("nvme-pci: convert the data mapping to blk_rq_dma_map")
+moved nvme-pci onto
+commit 858299dc6160 ("block: add scatterlist-less DMA mapping helpers"):
+a request is now mapped with a single IOVA allocation covering the
+whole transfer, not with per-segment allocations proportional to its
+size, so larger transfers cost fewer mapping operations, not more,
+and the rbtree allocation rate is bounded by device bandwidth rather
+than IOPS.
+
+Larger transfers are a measurable win where per-command overhead
+dominates: on a 16-vCPU KVM guest with a virtual VT-d and a
+RAM-backed emulated NVMe (4MB MDTS), lifting the 128KB cap takes 2MB
+sequential reads from 7.5 to 17.6 GiB/s (+133%) and 512K random
+reads from 7.3 to 13.8 GiB/s (+89%), with 4K random unchanged. A
+second reproduction on a 14-vCPU guest (EPYC 9124 host, emulated
+VT-d, RAM-backed NVMe, 4MB MDTS) measures +371% and +63% for the
+same two shapes through the max_sectors_kb opt-in this patch adds,
+4K again unchanged. Interrupt and completion counts drop
+proportionally on bare metal too (-94% interrupts/GB for 2MB reads
+on an EPYC 9124 host, AMD-Vi translated lazy domain, Samsung PM9A3).
+
+They are not a win everywhere: on that same bare metal host the
+PM9A3 serves one 2MB command with less internal parallelism than
+sixteen 128KB commands, so 2MB sequential reads lose 8% at moderate
+queue depth (deeper queues do not recover it), and 4K readers
+competing with unsplit 2MB streams see their p99 latency go from
+4.6ms to 11.1ms. Re-capping the request size via max_sectors_kb
+restores base behavior exactly, confirming the delta is purely
+request-size policy, not mapping cost.
+
+Express exactly that split: bound max_hw_sectors only by the
+driver's descriptor sizing (NVME_MAX_BYTES) and dma_max_mapping_size()
+(a real limit only for bounce-buffered untrusted devices), and apply
+dma_opt_mapping_size() to the default max_sectors via the new
+queue_limits.max_default_sectors instead. Default behavior on
+translated domains is unchanged - requests still split at 128KB -
+but administrators can now raise max_sectors_kb up to the MDTS bound
+for the deployments where larger commands win (virtualized NVMe,
+interrupt- or power-constrained hosts), a choice the hard cap
+previously denied. Domains without a genuine DMA optimum
+(dma_opt == dma_max: direct DMA, passthrough) keep today's defaults,
+as do the non-PCI transports, which leave opt_transfer_sectors at 0.
+
+Also drop the stale "iod->sg allocations" wording while at it:
+nvme-pci has not used scatterlists since the blk_rq_dma_map
+conversion.
+
+Signed-off-by: Davidlohr Bueso <dave@stgolabs.net>
+---
+ drivers/nvme/host/core.c |  1 +
+ drivers/nvme/host/nvme.h |  1 +
+ drivers/nvme/host/pci.c  | 25 ++++++++++++++++++++++---
+ 3 files changed, 24 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/nvme/host/core.c b/drivers/nvme/host/core.c
+index 453c1f0b2dd0..dc3b56a06773 100644
+--- a/drivers/nvme/host/core.c
++++ b/drivers/nvme/host/core.c
+@@ -2066,6 +2066,7 @@ static void nvme_set_ctrl_limits(struct nvme_ctrl *ctrl,
+ 		struct queue_limits *lim, bool is_admin)
+ {
+ 	lim->max_hw_sectors = ctrl->max_hw_sectors;
++	lim->max_default_sectors = ctrl->opt_transfer_sectors;
+ 	lim->max_segments = min_t(u32, USHRT_MAX,
+ 		min_not_zero(nvme_max_drv_segments(ctrl), ctrl->max_segments));
+ 	lim->max_integrity_segments = ctrl->max_integrity_segments;
+diff --git a/drivers/nvme/host/nvme.h b/drivers/nvme/host/nvme.h
+index 824651cc898d..653d05638db7 100644
+--- a/drivers/nvme/host/nvme.h
++++ b/drivers/nvme/host/nvme.h
+@@ -375,6 +375,7 @@ struct nvme_ctrl {
+ 
+ 	u64 cap;
+ 	u32 max_hw_sectors;
++	u32 opt_transfer_sectors;
+ 	u32 max_segments;
+ 	u32 max_integrity_segments;
+ 	u32 max_zeroes_sectors;
+diff --git a/drivers/nvme/host/pci.c b/drivers/nvme/host/pci.c
+index 69932d640b53..03e8939cfe1e 100644
+--- a/drivers/nvme/host/pci.c
++++ b/drivers/nvme/host/pci.c
+@@ -3726,12 +3726,32 @@ static struct nvme_dev *nvme_pci_alloc_dev(struct pci_dev *pdev,
+ 	dma_set_max_seg_size(&pdev->dev, 0xffffffff);
+ 
+ 	/*
+-	 * Limit the max command size to prevent iod->sg allocations going
+-	 * over a single page.
++	 * Bound the max command size by the driver's descriptor sizing
++	 * (NVME_MAX_BYTES) and by what the DMA API can map in one call,
++	 * a real limit only for bounce-buffered (untrusted) devices.
++	 * Requests are mapped with a single IOVA allocation, not per
++	 * segment, so larger transfers cost fewer mapping operations,
++	 * not more.
+ 	 */
+ 	dev->ctrl.max_hw_sectors = min_t(u32,
+ 			NVME_MAX_BYTES >> SECTOR_SHIFT,
+-			dma_opt_mapping_size(&pdev->dev) >> 9);
++			dma_max_mapping_size(&pdev->dev) >> 9);
++
++	/*
++	 * On translated IOMMU domains, transfers above the DMA-optimal
++	 * mapping size (the IOVA range-cache bound, 128KB on x86)
++	 * allocate their IOVA through the global rbtree lock, and some
++	 * devices extract less internal parallelism from fewer, larger
++	 * commands.  Keep the default request size capped at the optimal
++	 * size, but leave max_hw_sectors as the true ceiling so that
++	 * administrators can raise max_sectors_kb where larger commands
++	 * win (fewer completions, interrupts and mapping operations).
++	 * dma_opt == dma_max means no genuine hint exists (direct DMA or
++	 * passthrough); leave the default alone there.
++	 */
++	if (dma_opt_mapping_size(&pdev->dev) < dma_max_mapping_size(&pdev->dev))
++		dev->ctrl.opt_transfer_sectors =
++			dma_opt_mapping_size(&pdev->dev) >> 9;
+ 	dev->ctrl.max_segments = NVME_MAX_SEGS;
+ 	dev->ctrl.max_integrity_segments = 1;
+ 	return dev;
+--
+2.47.3

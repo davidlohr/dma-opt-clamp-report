@@ -1,5 +1,3 @@
-# dma-opt-clamp-report
-
 # The DMA-Optimal Clamp: measurement campaign and reshape
 
 Analysis of `358580dd598b` ("nvme-pci: don't hard-cap max_hw_sectors by the DMA-optimal
@@ -338,6 +336,27 @@ tmpfs bandwidth. Both equivalences hold in the guest too.
   0 failed, 47 skipped** (missing optional debug configs/tools), **zero dmesg
   findings** including lockdep. Two initial failures were missing userspace tools on
   the fresh box (`xfs_io`, a liburing helper); both pass after installing them.
+- **Second drive model (Micron 7450, via file over md-raid1)**: the spare-drive
+  assumption failed (both 480GB Microns carry the OS mirror), so this is a
+  directional test — a 30GB file written through the filesystem, read back
+  O_DIRECT, with `max_sectors_kb` toggled on both legs *and* md0 (md's stacked
+  limit is frozen at assembly). Reads stripe across both mirror legs (~9.1GiB/s
+  aggregate). Result, msk=128 vs 4096, medians n=3:
+
+  | case | 128KB requests | 4MB-capable requests | Δ |
+  |---|---|---|---|
+  | seq 2MB QD8 — MiB/s | 9078 | 9107 | +0.3% |
+  | seq 2MB QD8 — sys % | 24.7 | 6.9 | **−72%** |
+  | rand 512K QD32 — MiB/s | 6341 | 6336 | −0.1% |
+  | rand 512K QD32 — sys % | 26.4 | 17.0 | −36% |
+
+  Two upgrades to the findings: the PM9A3's −8% streaming loss **does not
+  reproduce** on this controller (bandwidth flat), making the regression
+  drive-specific rather than universal; and this is the campaign's **first
+  measured bare-metal CPU win** — through a stacked fs+md+nvme path, where
+  per-request software cost is real, 16x fewer requests cut streaming sys time
+  3.6x at identical bandwidth. Caveats: file+md path rather than a clean raw
+  device A/B, and both legs share one enclosure.
 
 ## 9. Complete ledger and recommendation
 
@@ -358,8 +377,35 @@ series preserves every win behind a one-line opt-in (`max_sectors_kb`, or a udev
 in guest images), keeps every default bit-identical, and turns the campaign's negative
 results into the changelog's supporting evidence. Honest scope statement: on tested
 hardware, unqualified throughput wins are virtualized-only; bare metal gets a measured
-extent-tail win (−32% p99) and large counter-level savings (interrupts, mapping ops)
-that did not convert to throughput or CPU on this machine class. The −8% loss is one
-drive model's firmware behavior (n=1); CPU-constrained bare-metal wins are plausible
-but unmeasured. Follow-up candidate: convert SCSI's SAS `opt_sectors` to the new
-limit, un-breaking it.
+extent-tail win (−32% p99), a measured CPU-efficiency win on stacked storage paths
+(−72% streaming sys time through fs+md-raid1 on the Micron 7450 at flat bandwidth),
+and large counter-level savings (interrupts, mapping ops) that did not convert to
+anything on the raw-device path of this machine class. The −8% loss is
+drive-specific: it appears on the PM9A3 and does not reproduce on the Micron 7450
+(n=2, split) — which strengthens per-device opt-in as the right granularity.
+Follow-up candidate: convert SCSI's SAS `opt_sectors` to the new limit, un-breaking
+it.
+
+## 10. Reproduction notes
+
+- Latitude's preinstalled `bnxt_en` DKMS breaks `make install` on rc kernels via the
+  postinst hook — install boot files manually + `update-initramfs`; in-tree bnxt_en
+  serves the NIC.
+- `localmodconfig` on bare metal strips virtio/9p — force them back as builtins if
+  kernels double as vng guests (guest root panics otherwise).
+- vng: `--qemu-opts=` needs the equals form; `intel-iommu` requires prepending
+  `-machine q35`; emulated VT-d works fine on AMD hosts.
+- fio: options after a `--name` are job-local — in multi-job invocations, globals
+  (`--filename` etc.) must precede the first `--name`, or later jobs silently fail.
+- 2MB requests need segment headroom: `NVME_MAX_SEGS`=256, so scattered 4K buffers
+  split at 1MB regardless of sector limits — hugepage-backed buffers keep the
+  variables separated.
+- Never run timed guest boots concurrently with builds (5–10x timing inflation).
+- `pgrep -f` inside an ssh `sh -c` wrapper matches the wrapper's own cmdline — don't
+  build completion-watchers on it.
+- blktests on a fresh box needs `git`, `xfsprogs`, `liburing-dev`, and `column`
+  (bsdmainutils) or tests fail/degrade for tooling reasons.
+- md-raid stacked queue limits are frozen at assembly: raising a member's
+  `max_sectors_kb` does nothing until `md0`'s own `max_sectors_kb` is raised too.
+- Campaign totals: ~30 bare-metal boots, 9 guest boots, 5 kernel configs, 6 workload
+  families, ~19 hours of a $1.25/hr machine.
