@@ -3,9 +3,9 @@
 <text x="20" y="28" font-size="14" font-weight="600" fill="#0b0b0b">Completion cost: NVMe interrupts per GiB read (medians n=6)</text>
 <defs><pattern id="tex" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill-opacity="0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fcfcfb" stroke-width="2.5"/></pattern></defs>
 <rect x="190" y="40" width="10" height="10" rx="2" fill="#2a78d6"/>
-<text x="205" y="49" font-size="11" fill="#52514e">base (128KB cap)</text>
-<rect x="342.2" y="40" width="10" height="10" rx="2" fill="#eb6834"/>
-<text x="357.2" y="49" font-size="11" fill="#52514e">358580dd598b (2MB)</text>
+<text x="205" y="49" font-size="11" fill="#52514e">baseline (128KB default)</text>
+<rect x="399.8" y="40" width="10" height="10" rx="2" fill="#eb6834"/>
+<text x="414.8" y="49" font-size="11" fill="#52514e">series, opt-in (2MB)</text>
 <line x1="190.0" y1="56" x2="190.0" y2="296" stroke="#eceae6"/>
 <text x="190.0" y="312" font-size="10" fill="#52514e" text-anchor="middle">0</text>
 <line x1="304.3" y1="56" x2="304.3" y2="296" stroke="#eceae6"/>

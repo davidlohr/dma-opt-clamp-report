@@ -13,14 +13,14 @@
 <line x1="670.0" y1="56" x2="670.0" y2="153" stroke="#eceae6"/>
 <text x="670.0" y="169" font-size="10" fill="#52514e" text-anchor="middle">12</text>
 <text x="430" y="181" font-size="10" fill="#52514e" text-anchor="middle">p99 (ms) — lower is better</text>
-<text x="182" y="73.5" font-size="11" fill="#0b0b0b" text-anchor="end">base, shared device</text>
+<text x="182" y="73.5" font-size="11" fill="#0b0b0b" text-anchor="end">baseline, shared device</text>
 <path d="M190.0,62.0 h180.8 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-180.8 z" fill="#2a78d6"/>
 <text x="380.8" y="73.5" font-size="10.5" fill="#52514e">4.62</text>
-<text x="182" y="102.5" font-size="11" fill="#0b0b0b" text-anchor="end">2MB requests, shared device</text>
+<text x="182" y="102.5" font-size="11" fill="#0b0b0b" text-anchor="end">opt-in, shared device</text>
 <path d="M190.0,91.0 h439.2 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-439.2 z" fill="#eb6834"/>
 <text x="639.2" y="102.5" font-size="10.5" fill="#52514e">11.08</text>
 <text x="682.2" y="102.5" font-size="10.5" font-weight="600" fill="#0b0b0b">+140%</text>
-<text x="182" y="131.5" font-size="11" fill="#0b0b0b" text-anchor="end">2MB requests, separate device</text>
+<text x="182" y="131.5" font-size="11" fill="#0b0b0b" text-anchor="end">opt-in, separate device</text>
 <rect x="190.0" y="120.0" width="6.6" height="15" fill-opacity="1" fill="#eb6834"/>
 <rect x="190.0" y="120.0" width="6.6" height="15" fill-opacity="1" fill="url(#tex)"/>
 <text x="202.6" y="131.5" font-size="10.5" fill="#52514e">0.165</text>
