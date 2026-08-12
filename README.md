@@ -330,6 +330,10 @@ establishes the virtualization cost floor: large-block ≈ native (6076 vs
 puts the guest in a translated domain where the clamp is live and every
 DMA map/unmap traps to resync shadow mappings:
 
+![shadow-vIOMMU bandwidth](dma-opt-clamp-figs/fig5-viommu-bw.svg)
+
+![extent p99 collapse](dma-opt-clamp-figs/fig6-viommu-p99.svg)
+
 | case | baseline (128KB) | opt-in (2MB) | Δ | passthrough-native |
 |---|---|---|---|---|
 | seq 2MB QD8 — MiB/s | 661 | 6100 | **+823%** | 6076 |

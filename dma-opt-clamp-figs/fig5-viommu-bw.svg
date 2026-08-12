@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="285" viewBox="0 0 760 285" font-family="system-ui, -apple-system, sans-serif">
+<rect width="760" height="285" fill="#fcfcfb" stroke="#e0dedb"/>
+<text x="20" y="28" font-size="14" font-weight="600" fill="#0b0b0b">Guest + shadow vIOMMU, real PM9A3 (VFIO passthrough): read MiB/s</text>
+<defs><pattern id="tex" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill-opacity="0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fcfcfb" stroke-width="2.5"/></pattern></defs>
+<rect x="190" y="40" width="10" height="10" rx="2" fill="#2a78d6"/>
+<text x="205" y="49" font-size="11" fill="#52514e">baseline (128KB clamp)</text>
+<rect x="385.4" y="40" width="10" height="10" rx="2" fill="#eb6834"/>
+<text x="400.4" y="49" font-size="11" fill="#52514e">opt-in (2MB)</text>
+<rect x="508.79999999999995" y="40" width="10" height="10" rx="2" fill="#1baf7a"/>
+<text x="523.8" y="49" font-size="11" fill="#52514e">passthrough-native (no vIOMMU)</text>
+<line x1="190.0" y1="56" x2="190.0" y2="255" stroke="#eceae6"/>
+<text x="190.0" y="271" font-size="10" fill="#52514e" text-anchor="middle">0</text>
+<line x1="327.1" y1="56" x2="327.1" y2="255" stroke="#eceae6"/>
+<text x="327.1" y="271" font-size="10" fill="#52514e" text-anchor="middle">2,000</text>
+<line x1="464.3" y1="56" x2="464.3" y2="255" stroke="#eceae6"/>
+<text x="464.3" y="271" font-size="10" fill="#52514e" text-anchor="middle">4,000</text>
+<line x1="601.4" y1="56" x2="601.4" y2="255" stroke="#eceae6"/>
+<text x="601.4" y="271" font-size="10" fill="#52514e" text-anchor="middle">6,000</text>
+<text x="430" y="283" font-size="10" fill="#52514e" text-anchor="middle">MiB/s</text>
+<text x="182" y="90.5" font-size="11" fill="#0b0b0b" text-anchor="end">seq 2MB QD8</text>
+<path d="M190.0,62.0 h41.3 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-41.3 z" fill="#2a78d6"/>
+<text x="241.3" y="73.5" font-size="10.5" fill="#52514e">661</text>
+<path d="M190.0,79.0 h414.3 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-414.3 z" fill="#eb6834"/>
+<text x="614.3" y="90.5" font-size="10.5" fill="#52514e">6,100</text>
+<text x="657.3" y="90.5" font-size="10.5" font-weight="600" fill="#0b0b0b">+823%</text>
+<path d="M190.0,96.0 h412.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-412.6 z" fill="#1baf7a"/>
+<text x="612.6" y="107.5" font-size="10.5" fill="#52514e">6,076</text>
+<text x="182" y="153.5" font-size="11" fill="#0b0b0b" text-anchor="end">kv_restore (8xQD2x2MB)</text>
+<path d="M190.0,125.0 h43.7 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-43.7 z" fill="#2a78d6"/>
+<text x="243.7" y="136.5" font-size="10.5" fill="#52514e">695</text>
+<path d="M190.0,142.0 h413.9 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-413.9 z" fill="#eb6834"/>
+<text x="613.9" y="153.5" font-size="10.5" fill="#52514e">6,095</text>
+<text x="656.9" y="153.5" font-size="10.5" font-weight="600" fill="#0b0b0b">+777%</text>
+<path d="M190.0,159.0 h409.5 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-409.5 z" fill="#1baf7a"/>
+<text x="609.5" y="170.5" font-size="10.5" fill="#52514e">6,030</text>
+<text x="182" y="216.5" font-size="11" fill="#0b0b0b" text-anchor="end">kv_qos big (2xQD8x2MB)</text>
+<path d="M190.0,188.0 h17.5 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-17.5 z" fill="#2a78d6"/>
+<text x="217.5" y="199.5" font-size="10.5" fill="#52514e">313</text>
+<path d="M190.0,205.0 h193.2 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-193.2 z" fill="#eb6834"/>
+<text x="393.2" y="216.5" font-size="10.5" fill="#52514e">2,876</text>
+<path d="M190.0,222.0 h194.4 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-194.4 z" fill="#1baf7a"/>
+<text x="394.4" y="233.5" font-size="10.5" fill="#52514e">2,893</text>
+<line x1="190" y1="56" x2="190" y2="255" stroke="#52514e"/>
+</svg>
