@@ -319,6 +319,40 @@ requests), and this is the campaign's first measured bare-metal CPU win:
 through a stacked fs+md+nvme path, 16x fewer requests cut streaming sys time
 3.6x at identical bandwidth.
 
+### 7.7 Real NVMe under virtualization (VFIO passthrough)
+
+The guest matrix (§7.3) used a RAM-backed emulated device; this leg passes a
+real PM9A3 through to the guest (VFIO), in two topologies. Pure passthrough
+(no vIOMMU: guest is direct-DMA, no clamp exists, both kernels identical)
+establishes the virtualization cost floor: large-block ≈ native (6076 vs
+6083 MiB/s bare metal), 4K IOPS −15%. Adding an emulated vIOMMU
+(`intel-iommu,caching-mode=on` — the standard secure-guest configuration)
+puts the guest in a translated domain where the clamp is live and every
+DMA map/unmap traps to resync shadow mappings:
+
+| case | baseline (128KB) | opt-in (2MB) | Δ | passthrough-native |
+|---|---|---|---|---|
+| seq 2MB QD8 — MiB/s | 661 | 6100 | **+823%** | 6076 |
+| seq 2MB QD8 — p50 | 24.2ms | 2.6ms | | 2.6ms |
+| kv_restore — MiB/s | 695 | 6095 | **+777%** | 6030 |
+| kv_restore — extent p99 | **489ms** | 5.7ms | **−99%** | 5.8ms |
+| kv_qos big — MiB/s | 313 | 2876 | +819% | 2893 |
+| kv_qos small — p99 | 6.7ms | 6.1ms | ~flat | 5.5ms |
+| rand 4K — MiB/s | 109 | 113 | +3.7% | 3030 |
+
+With shadow-mapped DMA, per-request mapping cost dominates completely: the
+opt-in's 16x fewer mappings recovers **passthrough-native throughput on
+real NAND**, and — unlike bare metal — the same-device small-IO tail shows
+no opt-in penalty (everything 4K is already shadow-map-bound, 94% sys).
+This is the strongest single result in the campaign: on the
+security-standard virtualized configuration, the 128KB default costs ~9x
+on restore paths and half a second of extent p99. Open oddity, recorded
+honestly: 512K randread QD32 gains only +18% where the per-map cost model
+predicts ~4x — unexplained, flagged for follow-up.
+
+The KV-shaped workloads used here are maintained as a standalone suite:
+[kvspill](https://github.com/davidlohr/kvspill).
+
 ## 8. Overall conclusions
 
 1. **The mechanism is verified end to end.** With the series opted in, requests
