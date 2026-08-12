@@ -24,17 +24,24 @@ baseline kernel against the series in its two states:
   measured — within ±0.4% on every metric, to the microsecond on QoS tails.
   Safe to ship fleet-wide.
 - **Opt-in** (`echo <MDTS> > /sys/block/<dev>/queue/max_sectors_kb`):
-  **+371%** large-block throughput on virtualized NVMe, **−32%** KV-extent
-  restore p99 on bare metal, **−94%** interrupts/GB, **−72%** streaming sys-CPU
-  through stacked storage paths — traded, on one of two tested drive models,
-  against −8% raw streaming bandwidth and a sharp same-device small-IO latency
-  penalty that per-device opt-in fully avoids.
+  **+777–837%** throughput and a **489ms → 5.7ms** extent-p99 collapse on a
+  real NVMe passed through to a shadow-vIOMMU guest (the security-standard
+  virtualized configuration), **9x less energy per byte** there, +371% on
+  emulated NVMe, **−32%** KV-extent restore p99 on bare metal, **−94%**
+  interrupts/GB, **−72%** streaming sys-CPU through stacked storage paths —
+  traded, on one of two tested drive models, against −8% raw streaming
+  bandwidth and a sharp same-device small-IO latency penalty that per-device
+  opt-in fully avoids. In vIOMMU guests the full win requires
+  superpage-sized requests (≥2MB, contiguous buffers); sub-2MB gains are
+  +12–21%.
 
-For AI/ML KV-cache serving, the practical outcome (§9): cloud instances get a
-multi-x faster NVMe offload tier with one udev rule; bare-metal serving trades a
-few percent of restore bandwidth for a 32% better TTFT tail on dedicated offload
-devices; and the storage layout rule is simply "opt in the KV tier, never the
-metadata tier."
+For AI/ML KV-cache serving, the practical outcome (§9): virtualized serving
+gets an order-of-magnitude faster NVMe offload tier with one udev rule — and a
+calibration of a real stack (LMCache) shows its whole-object I/O (7–32MiB)
+lands naturally above the superpage threshold where that win is full-sized;
+bare-metal serving trades a few percent of restore bandwidth for a 32% better
+TTFT tail on dedicated offload devices; and the storage layout rule is simply
+"opt in the KV tier, never the metadata tier."
 
 ## 1. Background: the clamp and why it is obsolete
 
@@ -383,7 +390,10 @@ through a stacked fs+md+nvme path, 16x fewer requests cut streaming sys time
    clean under lockdep at the raised limit; ~40 boots of dmesg scans show zero
    faults or warnings; the sub-128KB population is bit-identical throughout.
 3. **The wins are environment-specific — which is the argument for the shape of
-   the series.** Virtualized NVMe: +371%/+63%, transformative. Bare metal:
+   the series.** Virtualized NVMe: +371%/+63% emulated, and **+777–837% with
+   a 489ms→5.7ms extent-p99 collapse and 9x lower J/GiB** on real hardware
+   under a shadow vIOMMU — transformative, with the full win gated on
+   superpage-sized requests. Bare metal:
    tail-latency and CPU-efficiency wins (−32% extent p99; −72% stacked-path
    sys), while raw streaming bandwidth is drive-dependent (−8% on PM9A3, flat
    on Micron 7450). A default flip would gamble those tradeoffs fleet-wide; a
@@ -401,12 +411,22 @@ through a stacked fs+md+nvme path, 16x fewer requests cut streaming sys time
 The series was evaluated specifically against KV-offload I/O shapes (§5.2).
 Summary of what it means for a serving deployment:
 
-- **Cloud/virtualized serving is the headline beneficiary.** KV offload tiers
-  on cloud instances with emulated/paravirt NVMe gain **4.7x restore
-  bandwidth** (+371%) and **−83% extent p99** with one udev rule in the guest
-  image. Prefix-cache reloads at 512K gain +63%. For inference fleets running
-  on cloud block storage, this is the difference between NVMe offload being a
-  bottleneck and being effectively free at the I/O layer.
+- **Virtualized serving is the headline beneficiary — now confirmed on real
+  hardware.** On a real NVMe passed through to a shadow-vIOMMU guest (the
+  security-standard configuration), the opt-in takes KV restores from
+  695 to 6095 MiB/s (**+777%**) and collapses whole-extent p99 from
+  **489ms to 5.7ms** — recovering passthrough-native performance — at **9x
+  less energy per byte** (49 → 5.4 J/GiB). Emulated/paravirt NVMe gains
+  +371%/+63%. One udev rule in the guest image.
+- **The superpage condition is naturally met by real KV stacks.** The full
+  virtualized win requires superpage-sized requests (≥2MB, physically
+  contiguous buffers; sub-2MB requests gain only +12–21%). Calibration of a
+  real stack (LMCache 0.5.3) measured **whole-object reads of 7–32MiB**
+  (model-dependent, formula-exact) from pinned buffers — comfortably above
+  the threshold. One operational requirement follows: the offload tier must
+  be accessed with O_DIRECT (LMCache: `use_odirect`) or via hugepage-backed
+  buffers for the contiguity condition to hold; the backend's buffered
+  default routes through writeback instead.
 - **Bare metal, dedicated offload device: a TTFT-tail trade worth taking.**
   Opting in trades −6% aggregate restore bandwidth and +23% median extent
   latency for **−32% extent p99** — and TTFT SLOs are tail-driven. On drives
@@ -429,10 +449,12 @@ Summary of what it means for a serving deployment:
   enabling the series (without opt-in) on a serving fleet changes nothing
   until a device is deliberately opted in.
 - **What this study does not claim**: end-to-end TTFT/throughput on a real
-  inference stack (the emulation is I/O-shape-faithful; compute and H2D stages
-  sit outside the changed path), and GPUDirect Storage behavior (bus-address
-  P2P bypasses the IOVA path; host-bridge-routed P2P would interact and is
-  future work alongside the p2pdma series).
+  inference stack — though the I/O emulation is now calibrated against one
+  (whole-object sizes, syscall discipline, and concurrency measured from
+  LMCache; see the [kvspill](https://github.com/davidlohr/kvspill) profile) —
+  and GPUDirect Storage behavior (bus-address P2P bypasses the IOVA path;
+  host-bridge-routed P2P would interact and is future work alongside the
+  p2pdma series).
 
 ## 10. Reproduction notes
 
