@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="280" viewBox="0 0 760 280" font-family="system-ui, -apple-system, sans-serif">
+<rect width="760" height="280" fill="#fcfcfb" stroke="#e0dedb"/>
+<text x="20" y="28" font-size="14" font-weight="600" fill="#0b0b0b">Request-size sweep, shadow-vIOMMU guest (QD8): the superpage cliff</text>
+<defs><pattern id="tex" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill-opacity="0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fcfcfb" stroke-width="2.5"/></pattern></defs>
+<rect x="190" y="40" width="10" height="10" rx="2" fill="#2a78d6"/>
+<text x="205" y="49" font-size="11" fill="#52514e">baseline (128KB clamp)</text>
+<rect x="385.4" y="40" width="10" height="10" rx="2" fill="#eb6834"/>
+<text x="400.4" y="49" font-size="11" fill="#52514e">opt-in (unsplit)</text>
+<line x1="190.0" y1="56" x2="190.0" y2="250" stroke="#eceae6"/>
+<text x="190.0" y="266" font-size="10" fill="#52514e" text-anchor="middle">0</text>
+<line x1="327.1" y1="56" x2="327.1" y2="250" stroke="#eceae6"/>
+<text x="327.1" y="266" font-size="10" fill="#52514e" text-anchor="middle">2,000</text>
+<line x1="464.3" y1="56" x2="464.3" y2="250" stroke="#eceae6"/>
+<text x="464.3" y="266" font-size="10" fill="#52514e" text-anchor="middle">4,000</text>
+<line x1="601.4" y1="56" x2="601.4" y2="250" stroke="#eceae6"/>
+<text x="601.4" y="266" font-size="10" fill="#52514e" text-anchor="middle">6,000</text>
+<text x="430" y="278" font-size="10" fill="#52514e" text-anchor="middle">MiB/s</text>
+<text x="182" y="82.0" font-size="11" fill="#0b0b0b" text-anchor="end">256K</text>
+<path d="M190.0,62.0 h40.0 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-40.0 z" fill="#2a78d6"/>
+<text x="240.0" y="73.5" font-size="10.5" fill="#52514e">642</text>
+<path d="M190.0,79.0 h45.4 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-45.4 z" fill="#eb6834"/>
+<text x="245.4" y="90.5" font-size="10.5" fill="#52514e">720</text>
+<text x="274.4" y="90.5" font-size="10.5" font-weight="600" fill="#0b0b0b">+12%</text>
+<text x="182" y="128.0" font-size="11" fill="#0b0b0b" text-anchor="end">512K</text>
+<path d="M190.0,108.0 h40.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-40.6 z" fill="#2a78d6"/>
+<text x="240.6" y="119.5" font-size="10.5" fill="#52514e">650</text>
+<path d="M190.0,125.0 h48.3 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-48.3 z" fill="#eb6834"/>
+<text x="248.3" y="136.5" font-size="10.5" fill="#52514e">762</text>
+<text x="277.3" y="136.5" font-size="10.5" font-weight="600" fill="#0b0b0b">+17%</text>
+<text x="182" y="174.0" font-size="11" fill="#0b0b0b" text-anchor="end">1MB</text>
+<path d="M190.0,154.0 h40.7 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-40.7 z" fill="#2a78d6"/>
+<text x="240.7" y="165.5" font-size="10.5" fill="#52514e">652</text>
+<path d="M190.0,171.0 h50.0 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-50.0 z" fill="#eb6834"/>
+<text x="250.0" y="182.5" font-size="10.5" fill="#52514e">788</text>
+<text x="279.0" y="182.5" font-size="10.5" font-weight="600" fill="#0b0b0b">+21%</text>
+<text x="182" y="220.0" font-size="11" fill="#0b0b0b" text-anchor="end">2MB (superpage)</text>
+<path d="M190.0,200.0 h40.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-40.6 z" fill="#2a78d6"/>
+<text x="240.6" y="211.5" font-size="10.5" fill="#52514e">651</text>
+<path d="M190.0,217.0 h414.4 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-414.4 z" fill="#eb6834"/>
+<text x="614.4" y="228.5" font-size="10.5" fill="#52514e">6,102</text>
+<text x="657.4" y="228.5" font-size="10.5" font-weight="600" fill="#0b0b0b">+837%</text>
+<line x1="190" y1="56" x2="190" y2="250" stroke="#52514e"/>
+</svg>

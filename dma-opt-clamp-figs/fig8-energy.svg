@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="280" viewBox="0 0 760 280" font-family="system-ui, -apple-system, sans-serif">
+<rect width="760" height="280" fill="#fcfcfb" stroke="#e0dedb"/>
+<text x="20" y="28" font-size="14" font-weight="600" fill="#0b0b0b">Marginal package energy per GiB read (idle 18.2W subtracted, QD8)</text>
+<defs><pattern id="tex" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill-opacity="0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fcfcfb" stroke-width="2.5"/></pattern></defs>
+<rect x="190" y="40" width="10" height="10" rx="2" fill="#2a78d6"/>
+<text x="205" y="49" font-size="11" fill="#52514e">baseline (128KB clamp)</text>
+<rect x="385.4" y="40" width="10" height="10" rx="2" fill="#eb6834"/>
+<text x="400.4" y="49" font-size="11" fill="#52514e">opt-in (unsplit)</text>
+<line x1="190.0" y1="56" x2="190.0" y2="250" stroke="#eceae6"/>
+<text x="190.0" y="266" font-size="10" fill="#52514e" text-anchor="middle">0</text>
+<line x1="277.3" y1="56" x2="277.3" y2="250" stroke="#eceae6"/>
+<text x="277.3" y="266" font-size="10" fill="#52514e" text-anchor="middle">10</text>
+<line x1="364.5" y1="56" x2="364.5" y2="250" stroke="#eceae6"/>
+<text x="364.5" y="266" font-size="10" fill="#52514e" text-anchor="middle">20</text>
+<line x1="451.8" y1="56" x2="451.8" y2="250" stroke="#eceae6"/>
+<text x="451.8" y="266" font-size="10" fill="#52514e" text-anchor="middle">30</text>
+<line x1="539.1" y1="56" x2="539.1" y2="250" stroke="#eceae6"/>
+<text x="539.1" y="266" font-size="10" fill="#52514e" text-anchor="middle">40</text>
+<line x1="626.4" y1="56" x2="626.4" y2="250" stroke="#eceae6"/>
+<text x="626.4" y="266" font-size="10" fill="#52514e" text-anchor="middle">50</text>
+<text x="430" y="278" font-size="10" fill="#52514e" text-anchor="middle">J/GiB - lower is better</text>
+<text x="182" y="82.0" font-size="11" fill="#0b0b0b" text-anchor="end">256K</text>
+<path d="M190.0,62.0 h424.5 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-424.5 z" fill="#2a78d6"/>
+<text x="624.5" y="73.5" font-size="10.5" fill="#52514e">49.10</text>
+<path d="M190.0,79.0 h381.7 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-381.7 z" fill="#eb6834"/>
+<text x="581.7" y="90.5" font-size="10.5" fill="#52514e">44.20</text>
+<text x="182" y="128.0" font-size="11" fill="#0b0b0b" text-anchor="end">512K</text>
+<path d="M190.0,108.0 h421.9 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-421.9 z" fill="#2a78d6"/>
+<text x="621.9" y="119.5" font-size="10.5" fill="#52514e">48.80</text>
+<path d="M190.0,125.0 h360.8 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-360.8 z" fill="#eb6834"/>
+<text x="560.8" y="136.5" font-size="10.5" fill="#52514e">41.80</text>
+<text x="182" y="174.0" font-size="11" fill="#0b0b0b" text-anchor="end">1MB</text>
+<path d="M190.0,154.0 h421.9 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-421.9 z" fill="#2a78d6"/>
+<text x="621.9" y="165.5" font-size="10.5" fill="#52514e">48.80</text>
+<path d="M190.0,171.0 h349.5 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-349.5 z" fill="#eb6834"/>
+<text x="549.5" y="182.5" font-size="10.5" fill="#52514e">40.50</text>
+<text x="182" y="220.0" font-size="11" fill="#0b0b0b" text-anchor="end">2MB (superpage)</text>
+<path d="M190.0,200.0 h423.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-423.6 z" fill="#2a78d6"/>
+<text x="623.6" y="211.5" font-size="10.5" fill="#52514e">49.00</text>
+<path d="M190.0,217.0 h43.1 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-43.1 z" fill="#eb6834"/>
+<text x="243.1" y="228.5" font-size="10.5" fill="#52514e">5.40</text>
+<text x="279.1" y="228.5" font-size="10.5" font-weight="600" fill="#0b0b0b">9x less</text>
+<line x1="190" y1="56" x2="190" y2="250" stroke="#52514e"/>
+</svg>

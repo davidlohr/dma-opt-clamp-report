@@ -352,6 +352,10 @@ This is the strongest single result in the campaign: on the
 security-standard virtualized configuration, the 128KB default costs ~9x
 on restore paths and half a second of extent p99.
 
+![superpage cliff](dma-opt-clamp-figs/fig7-superpage-cliff.svg)
+
+![energy per GiB](dma-opt-clamp-figs/fig8-energy.svg)
+
 A bs x QD sweep resolved what first looked like an anomaly (512K gaining
 only +18%): the gain is a **cliff at 2MB, not a slope** — 256K/512K/1M
 gain +12/+17/+21% while 2MB gains +837%. Mechanism: with hugepage-backed
