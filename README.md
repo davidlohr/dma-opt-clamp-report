@@ -286,7 +286,7 @@ the win is one sysfs write — or one udev rule in a guest image — away.
 
 #### Real NVMe in the guest (VFIO passthrough)
 
-The matrix above uses a RAM-backed emulated device; this leg passes a
+The matrix above uses a RAM-backed emulated device; here we pass a
 real PM9A3 through to the guest (VFIO), in two topologies. Pure passthrough
 (no vIOMMU: guest is direct-DMA, no clamp exists, both kernels identical)
 establishes the virtualization cost floor: large-block ≈ native (6076 vs
