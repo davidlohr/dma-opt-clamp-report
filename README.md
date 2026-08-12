@@ -107,7 +107,7 @@ concern have inverted:
    the bandwidth bound already caps the rate. And in the default lazy (DMA-FQ)
    mode, frees are batched through the flush queue off the completion path.
 
-Empirical worst case (§7.4): sixteen CPUs for 60 seconds with *every* request
+Empirical worst case (§7.5): sixteen CPUs for 60 seconds with *every* request
 above the rcache bound produce 1.17µs average contended wait — **~0.005% of CPU
 time** on the lock. The wall cannot be rebuilt through this driver.
 
@@ -250,7 +250,7 @@ depth the 128KB splitting had *amplified device-side parallelism* (QD8 x 2MB
 became ~128 in-flight commands), and the PM9A3 tops out near 6.1GB/s on 2MB
 commands vs 6.6–6.7GB/s on 128KB streams. Re-capping via sysfs restores
 baseline exactly; added depth does not recover the loss — it is drive-internal,
-and **drive-specific** (§7.5: it does not reproduce on the Micron 7450).
+and **drive-specific** (§7.6: it does not reproduce on the Micron 7450).
 
 ### 7.2 KV-shaped workloads (bare metal)
 
@@ -270,7 +270,7 @@ and **drive-specific** (§7.5: it does not reproduce on the Micron 7450).
 The **QoS penalty** is the sharp edge: 4K readers sharing a device with unsplit
 2MB streams wait behind whole 2MB command service times. It is strictly
 same-device — moved to a second device, the same 4K workload runs at
-**p99 = 165µs / 188K IOPS** while the storm rages (§7.4). The **tail paradox**
+**p99 = 165µs / 188K IOPS** while the storm rages (§7.5). The **tail paradox**
 is the reward: whole-extent p99 improves 32% (no sub-request jitter) even as
 the median worsens.
 
@@ -343,7 +343,21 @@ sizes save ~12-15%.
 The KV-shaped workloads used here are maintained as a standalone suite:
 [kvspill](https://github.com/davidlohr/kvspill).
 
-### 7.4 Hardening
+### 7.4 Independent check: the kvio suite (405B objects)
+
+The [kvio](https://github.com/SamsungDS/ebpf-syscall) suite projects real
+KV-offload NVMe I/O from model geometry and issues it through LMCache's
+`raw_block` engine. Run against the largest KV object in circulation
+(Llama-3.1-405B: 126 MiB per 256-token block), it reproduces the study's
+conclusion from a different tool and I/O engine — restores gain **13.5-19.6%**
+in every configuration tested, stores stay flat — and surfaces a mechanism the
+fio campaign missed: nvme-pci *derives* `max_segments` from `max_hw_sectors`
+(`nvme_max_drv_segments()`), so the clamp also caps the segment count at
+**33** (vs 256 opted in). Scattered-buffer requests are therefore bounded near
+132KB independently of the sector limit — the other half of the contiguity
+story behind the superpage cliff. Full write-up: [kvio-analysis.md](kvio-analysis.md).
+
+### 7.5 Hardening
 
 - **Passthrough guard**: identity-domain boots show baseline and series
   bit-identical (`2048/2048`, ~6.0GiB/s) — the no-hint guard works; translation
@@ -360,7 +374,7 @@ The KV-shaped workloads used here are maintained as a standalone suite:
 - **blktests** (`block` + `nvme`, opt-in limit, lockdep kernel): **72 passed,
   0 failed, 47 skipped**, zero dmesg findings including lockdep.
 
-### 7.5 Second drive model (Micron 7450, via file over md-raid1)
+### 7.6 Second drive model (Micron 7450, via file over md-raid1)
 
 Both 480GB Microns carry the OS mirror, so this is a directional test: a 30GB
 file written through the filesystem, read back O_DIRECT, `max_sectors_kb`
