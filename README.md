@@ -350,9 +350,19 @@ real NAND**, and — unlike bare metal — the same-device small-IO tail shows
 no opt-in penalty (everything 4K is already shadow-map-bound, 94% sys).
 This is the strongest single result in the campaign: on the
 security-standard virtualized configuration, the 128KB default costs ~9x
-on restore paths and half a second of extent p99. Open oddity, recorded
-honestly: 512K randread QD32 gains only +18% where the per-map cost model
-predicts ~4x — unexplained, flagged for follow-up.
+on restore paths and half a second of extent p99.
+
+A bs x QD sweep resolved what first looked like an anomaly (512K gaining
+only +18%): the gain is a **cliff at 2MB, not a slope** — 256K/512K/1M
+gain +12/+17/+21% while 2MB gains +837%. Mechanism: with hugepage-backed
+buffers and size-aligned IOVA allocation, a 2MB request maps as one IOMMU
+**superpage** (one PDE, one shadow-sync trap); anything smaller maps
+per-4K-PTE, which caching-mode shadows page by page. In vIOMMU guests the
+opt-in pays fully only when requests reach superpage size with physically
+contiguous buffers. Host RAPL sampling during the same sweep (idle
+baseline subtracted) puts marginal energy at **49 J/GiB (baseline) vs
+5.4 J/GiB (opt-in, 2MB)** — 9x less energy per byte moved; sub-superpage
+sizes save ~12-15%.
 
 The KV-shaped workloads used here are maintained as a standalone suite:
 [kvspill](https://github.com/davidlohr/kvspill).
