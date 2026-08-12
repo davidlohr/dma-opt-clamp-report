@@ -1,4 +1,4 @@
-# Lifting the NVMe DMA-Optimal Clamp: a measurement study
+# Evaluate the NVMe DMA-Optimal Limit
 
 Evaluation of a two-patch series that lets NVMe requests grow past the 128KB
 DMA-optimal bound on translated IOMMU systems — as an administrator opt-in, with
