@@ -243,7 +243,7 @@ depth the 128KB splitting had *amplified device-side parallelism* (QD8 x 2MB
 became ~128 in-flight commands), and the PM9A3 tops out near 6.1GB/s on 2MB
 commands vs 6.6–6.7GB/s on 128KB streams. Re-capping via sysfs restores
 baseline exactly; added depth does not recover the loss — it is drive-internal,
-and **drive-specific** (§7.6: it does not reproduce on the Micron 7450).
+and **drive-specific** (§7.5: it does not reproduce on the Micron 7450).
 
 ### 7.2 KV-shaped workloads (bare metal)
 
@@ -269,6 +269,8 @@ the median worsens.
 
 ### 7.3 Virtualized (the headline win)
 
+#### Emulated NVMe (RAM-backed, emulated vIOMMU)
+
 ![guest seq 2MB](dma-opt-clamp-figs/fig4-guest-seq2m.svg)
 
 | case | baseline | opt-in | Δ |
@@ -282,46 +284,9 @@ Where completions are vmexits, 16x fewer of them is transformative. This is
 the common cloud deployment (emulated/paravirt NVMe under a guest vIOMMU), and
 the win is one sysfs write — or one udev rule in a guest image — away.
 
-### 7.4 Hardening
+#### Real NVMe in the guest (VFIO passthrough)
 
-- **Passthrough guard**: identity-domain boots show baseline and series
-  bit-identical (`2048/2048`, ~6.0GiB/s) — the no-hint guard works; translation
-  overhead itself measures <0.5% on this path.
-- **Cross-device QoS**: opt-in storm on drive A, 4K on drive B: p99 165µs vs
-  11,076µs shared — the interference is same-device queue contention only.
-- **Strict mode (negative result, reported as one)**: under `iommu.strict=1`
-  the opt-in keeps the same −8% seq shape at equal sys%, and 512K costs ~+4pp
-  sys at equal bandwidth — the tradeoff is completion-cost-driven, not
-  invalidation-driven.
-- **rbtree lock_stat** (16 jobs, every request >rcache, 60s):
-  `iova_rbtree_lock` — 1,076,721 acquisitions, 38,676 contentions, 1.17µs avg
-  wait, 58µs max, **≈0.005% of CPU time** (vs 129 contentions at default).
-- **blktests** (`block` + `nvme`, opt-in limit, lockdep kernel): **72 passed,
-  0 failed, 47 skipped**, zero dmesg findings including lockdep.
-
-### 7.6 Second drive model (Micron 7450, via file over md-raid1)
-
-Both 480GB Microns carry the OS mirror, so this is a directional test: a 30GB
-file written through the filesystem, read back O_DIRECT, `max_sectors_kb`
-toggled on both legs *and* md0 (md's stacked limit is frozen at assembly).
-Reads stripe across both mirror legs (~9.1GiB/s aggregate). Medians, n=3:
-
-| case | 128KB requests | opt-in (4MB-capable) | Δ |
-|---|---|---|---|
-| seq 2MB QD8 — MiB/s | 9078 | 9107 | +0.3% |
-| seq 2MB QD8 — sys % | 24.7 | 6.9 | **−72%** |
-| rand 512K QD32 — MiB/s | 6341 | 6336 | −0.1% |
-| rand 512K QD32 — sys % | 26.4 | 17.0 | −36% |
-
-Two upgrades: the PM9A3's streaming loss **does not reproduce** here (n=2,
-split — the regression is drive firmware behavior, not a property of large
-requests), and this is the campaign's first measured bare-metal CPU win:
-through a stacked fs+md+nvme path, 16x fewer requests cut streaming sys time
-3.6x at identical bandwidth.
-
-### 7.7 Real NVMe under virtualization (VFIO passthrough)
-
-The guest matrix (§7.3) used a RAM-backed emulated device; this leg passes a
+The matrix above uses a RAM-backed emulated device; this leg passes a
 real PM9A3 through to the guest (VFIO), in two topologies. Pure passthrough
 (no vIOMMU: guest is direct-DMA, no clamp exists, both kernels identical)
 establishes the virtualization cost floor: large-block ≈ native (6076 vs
@@ -370,6 +335,43 @@ sizes save ~12-15%.
 
 The KV-shaped workloads used here are maintained as a standalone suite:
 [kvspill](https://github.com/davidlohr/kvspill).
+
+### 7.4 Hardening
+
+- **Passthrough guard**: identity-domain boots show baseline and series
+  bit-identical (`2048/2048`, ~6.0GiB/s) — the no-hint guard works; translation
+  overhead itself measures <0.5% on this path.
+- **Cross-device QoS**: opt-in storm on drive A, 4K on drive B: p99 165µs vs
+  11,076µs shared — the interference is same-device queue contention only.
+- **Strict mode (negative result, reported as one)**: under `iommu.strict=1`
+  the opt-in keeps the same −8% seq shape at equal sys%, and 512K costs ~+4pp
+  sys at equal bandwidth — the tradeoff is completion-cost-driven, not
+  invalidation-driven.
+- **rbtree lock_stat** (16 jobs, every request >rcache, 60s):
+  `iova_rbtree_lock` — 1,076,721 acquisitions, 38,676 contentions, 1.17µs avg
+  wait, 58µs max, **≈0.005% of CPU time** (vs 129 contentions at default).
+- **blktests** (`block` + `nvme`, opt-in limit, lockdep kernel): **72 passed,
+  0 failed, 47 skipped**, zero dmesg findings including lockdep.
+
+### 7.5 Second drive model (Micron 7450, via file over md-raid1)
+
+Both 480GB Microns carry the OS mirror, so this is a directional test: a 30GB
+file written through the filesystem, read back O_DIRECT, `max_sectors_kb`
+toggled on both legs *and* md0 (md's stacked limit is frozen at assembly).
+Reads stripe across both mirror legs (~9.1GiB/s aggregate). Medians, n=3:
+
+| case | 128KB requests | opt-in (4MB-capable) | Δ |
+|---|---|---|---|
+| seq 2MB QD8 — MiB/s | 9078 | 9107 | +0.3% |
+| seq 2MB QD8 — sys % | 24.7 | 6.9 | **−72%** |
+| rand 512K QD32 — MiB/s | 6341 | 6336 | −0.1% |
+| rand 512K QD32 — sys % | 26.4 | 17.0 | −36% |
+
+Two upgrades: the PM9A3's streaming loss **does not reproduce** here (n=2,
+split — the regression is drive firmware behavior, not a property of large
+requests), and this is the campaign's first measured bare-metal CPU win:
+through a stacked fs+md+nvme path, 16x fewer requests cut streaming sys time
+3.6x at identical bandwidth.
 
 ## 8. Overall conclusions
 
