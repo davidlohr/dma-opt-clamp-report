@@ -32,8 +32,9 @@ baseline kernel against the series in its two states:
   traded, on one of two tested drive models, against −8% raw streaming
   bandwidth and a sharp same-device small-IO latency penalty that per-device
   opt-in fully avoids. In vIOMMU guests the full win requires
-  superpage-sized requests (≥2MB, contiguous buffers); sub-2MB gains are
-  +12–21%.
+  superpage-sized requests from **physically contiguous** buffers (≥2MB,
+  hugepage-backed): the identical request from a `malloc` buffer gains only
+  ~17%, a tenfold difference measured with buffer type as the sole variable.
 
 For AI/ML KV-cache serving, the practical outcome (§9): virtualized serving
 gets an order-of-magnitude faster NVMe offload tier with one udev rule — and a
@@ -340,6 +341,37 @@ baseline subtracted) puts marginal energy at **49 J/GiB (baseline) vs
 5.4 J/GiB (opt-in, 2MB)** — 9x less energy per byte moved; sub-superpage
 sizes save ~12-15%.
 
+#### The win is buffer-contiguity dependent
+
+The sweep above used hugepage-backed buffers throughout. Repeating the
+decisive point with the buffer type as the only variable (same kernel, same
+request size, medians n=2):
+
+![contiguity dependence](dma-opt-clamp-figs/fig10-contiguity.svg)
+
+| request | buffer | baseline | opt-in | Δ | opt-in sys% |
+|---|---|---|---|---|---|
+| 2MB | hugepage (contiguous) | 521 | **6105** | **+1072%** | **14%** |
+| 2MB | malloc (4K-scattered) | 519 | 607 | +17% | 99.8% |
+| 1MB | hugepage | 519 | 600 | +16% | 99.6% |
+| 1MB | malloc | 518 | 595 | +15% | 99.7% |
+
+A tenfold difference between rows one and two, from buffer allocation alone.
+The CPU signature identifies the mechanism unambiguously: the winning case
+runs at 14% sys, every other case is pegged near 100% sys — the guest is
+burning its cores on per-4K shadow-page-table maintenance, and only a
+2MB-sized, 2MB-aligned, physically contiguous request escapes it by mapping
+as a single IOMMU superpage. Contiguity alone is not enough (1MB hugepage
+gains the same ~16% as scattered), and request size alone is not enough
+(2MB scattered gains 17%).
+
+So the virtualized headline is conditional, and the condition is specific:
+**≥2MB requests from physically contiguous buffers**. Deployments that
+allocate their staging buffers with plain `malloc` see ~17%, not 10x. On
+bare metal the effect is absent — there is no shadow page table to
+maintain — which is why the bare-metal sections show no comparable
+sensitivity.
+
 The KV-shaped workloads used here are maintained as a standalone suite:
 [kvspill](https://github.com/davidlohr/kvspill).
 
@@ -433,12 +465,16 @@ Summary of what it means for a serving deployment:
   **489ms to 5.7ms** — recovering passthrough-native performance — at **9x
   less energy per byte** (49 → 5.4 J/GiB). Emulated/paravirt NVMe gains
   +371%/+63%. One udev rule in the guest image.
-- **The superpage condition is naturally met by real KV stacks.** The full
-  virtualized win requires superpage-sized requests (≥2MB, physically
-  contiguous buffers; sub-2MB requests gain only +12–21%). Calibration of a
-  real stack (LMCache 0.5.3) measured **whole-object reads of 7–32MiB**
-  (model-dependent, formula-exact) from pinned buffers — comfortably above
-  the threshold. One operational requirement follows: the offload tier must
+- **The superpage condition: size is met by real KV stacks, contiguity must
+  be arranged.** The full virtualized win needs ≥2MB requests *from
+  physically contiguous buffers*; the same request from a `malloc` buffer
+  gains ~17% instead of 10x (§7.3). Calibration of a real stack (LMCache
+  0.5.3) measured **whole-object reads of 7–32MiB** (model-dependent,
+  formula-exact), so the size condition is comfortably met — but whether the
+  staging buffer is 2MB-contiguous depends on the allocator (THP, explicit
+  hugepages, or a pinned pool). That is now the actionable knob for
+  virtualized KV deployments, and it is worth verifying per stack rather
+  than assuming. One operational requirement follows: the offload tier must
   be accessed with O_DIRECT (LMCache: `use_odirect`) or via hugepage-backed
   buffers for the contiguity condition to hold; the backend's buffered
   default routes through writeback instead.

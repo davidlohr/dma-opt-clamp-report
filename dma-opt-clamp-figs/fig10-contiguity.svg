@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="280" viewBox="0 0 760 280" font-family="system-ui, -apple-system, sans-serif">
+<rect width="760" height="280" fill="#fcfcfb" stroke="#e0dedb"/>
+<text x="20" y="28" font-size="14" font-weight="600" fill="#0b0b0b">Shadow-vIOMMU guest, opt-in kernel: buffer contiguity decides the win</text>
+<defs><pattern id="tex" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill-opacity="0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fcfcfb" stroke-width="2.5"/></pattern></defs>
+<rect x="190" y="40" width="10" height="10" rx="2" fill="#2a78d6"/>
+<text x="205" y="49" font-size="11" fill="#52514e">baseline kernel</text>
+<rect x="335.0" y="40" width="10" height="10" rx="2" fill="#eb6834"/>
+<text x="350.0" y="49" font-size="11" fill="#52514e">opt-in kernel</text>
+<line x1="190.0" y1="56" x2="190.0" y2="250" stroke="#eceae6"/>
+<text x="190.0" y="266" font-size="10" fill="#52514e" text-anchor="middle">0</text>
+<line x1="327.1" y1="56" x2="327.1" y2="250" stroke="#eceae6"/>
+<text x="327.1" y="266" font-size="10" fill="#52514e" text-anchor="middle">2,000</text>
+<line x1="464.3" y1="56" x2="464.3" y2="250" stroke="#eceae6"/>
+<text x="464.3" y="266" font-size="10" fill="#52514e" text-anchor="middle">4,000</text>
+<line x1="601.4" y1="56" x2="601.4" y2="250" stroke="#eceae6"/>
+<text x="601.4" y="266" font-size="10" fill="#52514e" text-anchor="middle">6,000</text>
+<text x="430" y="278" font-size="10" fill="#52514e" text-anchor="middle">MiB/s</text>
+<text x="182" y="82.0" font-size="11" fill="#0b0b0b" text-anchor="end">2MB req, hugepage buf</text>
+<path d="M190.0,62.0 h31.7 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-31.7 z" fill="#2a78d6"/>
+<text x="231.7" y="73.5" font-size="10.5" fill="#52514e">521</text>
+<path d="M190.0,79.0 h414.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-414.6 z" fill="#eb6834"/>
+<text x="614.6" y="90.5" font-size="10.5" fill="#52514e">6,105</text>
+<text x="657.6" y="90.5" font-size="10.5" font-weight="600" fill="#0b0b0b">+1072% (sys 14%)</text>
+<text x="182" y="128.0" font-size="11" fill="#0b0b0b" text-anchor="end">2MB req, malloc buf</text>
+<path d="M190.0,108.0 h31.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-31.6 z" fill="#2a78d6"/>
+<text x="231.6" y="119.5" font-size="10.5" fill="#52514e">519</text>
+<path d="M190.0,125.0 h37.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-37.6 z" fill="#eb6834"/>
+<text x="237.6" y="136.5" font-size="10.5" fill="#52514e">607</text>
+<text x="266.6" y="136.5" font-size="10.5" font-weight="600" fill="#0b0b0b">+17% (sys 100%)</text>
+<text x="182" y="174.0" font-size="11" fill="#0b0b0b" text-anchor="end">1MB req, hugepage buf</text>
+<path d="M190.0,154.0 h31.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-31.6 z" fill="#2a78d6"/>
+<text x="231.6" y="165.5" font-size="10.5" fill="#52514e">519</text>
+<path d="M190.0,171.0 h37.1 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-37.1 z" fill="#eb6834"/>
+<text x="237.1" y="182.5" font-size="10.5" fill="#52514e">600</text>
+<text x="266.1" y="182.5" font-size="10.5" font-weight="600" fill="#0b0b0b">+16%</text>
+<text x="182" y="220.0" font-size="11" fill="#0b0b0b" text-anchor="end">1MB req, malloc buf</text>
+<path d="M190.0,200.0 h31.5 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-31.5 z" fill="#2a78d6"/>
+<text x="231.5" y="211.5" font-size="10.5" fill="#52514e">518</text>
+<path d="M190.0,217.0 h36.8 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-36.8 z" fill="#eb6834"/>
+<text x="236.8" y="228.5" font-size="10.5" fill="#52514e">595</text>
+<text x="265.8" y="228.5" font-size="10.5" font-weight="600" fill="#0b0b0b">+15%</text>
+<line x1="190" y1="56" x2="190" y2="250" stroke="#52514e"/>
+</svg>
