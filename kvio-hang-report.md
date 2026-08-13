@@ -99,7 +99,3 @@ Found while using kvio as an independent check of an NVMe transfer-limit
 patch series; the full write-up of that comparison (including the block-path
 results kvio produced successfully) is at
 https://github.com/davidlohr/dma-opt-clamp-report/blob/main/kvio-analysis.md
-
-Happy to run additional instrumentation (py-spy dump, strace of the
-io_uring_enter loop, or an object-size bisect) on request — the setup is
-still available.
