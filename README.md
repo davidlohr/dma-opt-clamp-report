@@ -291,6 +291,8 @@ firmware-specific *and bidirectional* — the PM9A3 penalizes its maximum
 command a few percent, the 7450-480GB rewards it by a third. (The earlier
 flat Micron result is also explained: the file-over-md method aggregated
 two mirror legs and never isolated one drive's command-size response.)
+The full four-phase investigation, including the confounds caught and the
+anomalies that remain, is written up in [regression.md](regression.md).
 
 **Practical consequence — the optimal opt-in value is per-drive *and*
 per-environment:** on bare metal, sweep it — PM9A3-class firmware wants one
