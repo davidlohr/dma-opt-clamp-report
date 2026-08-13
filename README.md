@@ -38,7 +38,7 @@ Companion documents in this repository:
 - [iova-feasibility.md](iova-feasibility.md) — can the IOVA allocator make `max` safe? (prototype, lockup reproduction, per-domain rcache RFC design)
 
 
-## Executive summary
+## Summary
 
 Since the `blk_rq_dma_map` conversion, an NVMe request costs **one** IOVA
 allocation and one mapping regardless of its size — so larger requests mean
