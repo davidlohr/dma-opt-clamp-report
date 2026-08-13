@@ -152,7 +152,7 @@ passthrough behavior by default, but the segment budget still caps a scattered
 2MB command. Reaching 2MB commands needs physically contiguous (hugepage)
 buffers, exactly as on the fio side.
 
-## Finding 5 (suite limitation): the passthrough engine wedges at ~1000 commands
+## Finding 5 (suite limitation, now root-caused): the passthrough store path strands completions in the io_uring CQ-overflow backlog
 
 `--engine uring_cmd` with the default 128KB command size hangs indefinitely on
 a 126 MiB object (1008 commands): the process blocks with **zero device
@@ -163,6 +163,21 @@ kernels. The passthrough numbers in this document are therefore limited to
 the single-command-size cases that complete; the wire-validation step
 (`kvio_validate.py`) could not be exercised, since it needs a completed
 passthrough capture.
+
+Root cause (full analysis with the fdinfo smoking gun and falsification
+tables in [kvio-hang-report.md](kvio-hang-report.md)): the runner hardcodes
+`iouring_queue_depth=8` (CQ = 16 entries), the store path fans every mdts
+chunk of an object into one batch with no backpressure — the throttle
+measures unconsumed SQ slots, not outstanding requests — and once the sticky
+CQ-overflow bit trips, overflowed completions are only delivered on an
+`io_uring_enter(GETEVENTS)`, which the worker never issues after its final
+`submit()`. All NVMe commands succeed; their completions strand in the
+kernel's overflow list (`CqOverflowList` visible in `/proc/<pid>/fdinfo`,
+all `res=0`). It is a timing race, not a count threshold: at a fixed 97
+commands, per-command sizes of 96K–160K hang while 32K and 192K+ complete —
+the 131072 default sits mid-band. Queue depth ≥16 completed 23/23. Two
+fixes proposed in the report (throttle on the worker's own `in_flight`
+count; flush overflow on idle eventfd wakeups).
 
 A second, smaller gotcha: `--mdts-bytes` defaults to 131072, so a naive
 `kvio` A/B feeds *both* kernels 128KB commands and measures nothing about the

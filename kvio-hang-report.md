@@ -1,101 +1,134 @@
-# kvio: `--engine uring_cmd` hangs on large KV objects (all threads in futex wait, zero I/O in flight)
+# kvio raw_block `uring_cmd`: store hangs — CQ overflow backlog is never flushed (root cause + fixes)
 
-Reporting a reproducible hang in the `raw_block` `uring_cmd` engine on the
-`kvio` branch. The process stops making progress after the first object's
-command batch is submitted; every thread ends up in `futex_do_wait` with **no
-NVMe commands in flight**, so this looks like a lost wakeup / worker-pool
-deadlock in userspace rather than a stuck device or kernel path.
+The `raw_block` `uring_cmd` store path can strand completed I/O forever. All
+NVMe commands succeed at the device; their completions sit in the kernel's
+CQ **overflow backlog**, which the worker never flushes because it only
+enters the kernel when it has new SQEs to submit. Root cause, falsifying
+experiments, and two independent fixes below.
 
 ## Reproducer
 
 ```
 python examples/kv_cache_offload_io/run_kv_offload_io.py \
     --model meta-llama/Llama-3.1-405B --dtype bfloat16 --chunk-tokens 256 \
-    --num-chunks 1 --iters 1 --device /dev/ng2n1 --engine uring_cmd
+    --num-chunks 1 --iters 1 --device /dev/ng3n1 --engine uring_cmd
 ```
 
-One 256-token chunk of Llama-3.1-405B geometry = 132,120,576 B (126 MiB) per
-object, split by the default `--mdts-bytes 131072` into 1008 load / 1009 store
-commands. `--num-chunks 1 --iters 1` is enough: the hang is not
-duration- or load-dependent.
+Hangs in `wait_iouring()` forever (py-spy: MainThread at
+`_write_uring_cmd_buffers`, core.py:1387). `--num-chunks 1 --iters 1`
+suffices. Environment: kvio branch of mcgrof/LMCache, io-uring crate 0.7.14,
+Linux 7.2.0-rc1, Samsung PM9A3; reproduced on three kernel configs.
 
-Last line of output, then silence indefinitely (observed >58 min in one run,
-killed at 120 s in the instrumented run below):
+## Root cause
+
+**Constants.** The runner hardcodes `iouring_queue_depth=8`
+(run_kv_offload_io.py:198; the library default of 256 is not used). The ring
+is built without `setup_cqsize()` (lib.rs:1061), so the kernel gives
+`cq_entries = 2 * sq_entries` = **16 CQEs total** (io_uring.c).
+
+**Fan-out.** `_write_uring_cmd_buffers` splits the object at
+`--mdts-bytes` (default 131072) and pushes *every* chunk into one
+`batched_write()` call, then blocks in one `wait_iouring()`
+(core.py:1369-1387). A 126 MiB object = 1008 payload chunks + 1 header =
+**1009 concurrent submissions against a 16-entry completion queue**.
+
+**Broken flow control.** The worker throttles on
+`available = ring_size - submission_len()` (lib.rs:1568), but
+`submission_len()` counts *unconsumed SQ slots*, which io-uring resets to 0
+after every `submit()`. It measures nothing about outstanding requests, so
+the worker pumps 8 SQEs per iteration with zero backpressure (the true
+outstanding count sits unused in its own `in_flight` HashMap, lib.rs:1360).
+
+**The strand.** Once >16 completions accumulate, the kernel sets the sticky
+CQ-overflow bit and force-overflows *every* subsequent CQE
+(io_cqe_cache_refill). Overflowed CQEs are only delivered by an
+`io_uring_enter(GETEVENTS)` flush. The io-uring crate's `submit()` does set
+GETEVENTS when the overflow flag is up — which is why the submission phase
+limps through, delivering ~16 per submit — but the worker's reap path is
+pure shared-memory (`ring.completion().collect()`) and its idle path is
+`epoll_wait` (lib.rs:1543-1547): **after the final `submit()` it never
+enters the kernel again.** The completion eventfd still fires; the worker
+wakes, finds the (empty) CQ ring empty, and sleeps forever. Everything that
+overflows after the last submit is stranded.
+
+## The smoking gun
+
+`/proc/<pid>/fdinfo` of the io_uring fd while hung (1009-command run):
 
 ```
-LMCache INFO: RawBlockCore: skipping on-device metadata checkpoint load
-              (core.py:330:lmcache.v1.storage_backend.raw_block.core)
+SqMask: 0x7    SqHead: 1009  SqTail: 1009     <- all submitted and consumed
+CqMask: 0xf    CqHead: 232   CqTail: 232      <- app reaped 232, ring empty
+CqOverflowList:
+  user_data=233, res=0, flags=0
+  user_data=234, res=0, flags=0
+  ...                                          <- everything else, res=0 = SUCCESS
 ```
 
-## Environment
+plus `/sys/block/nvme3n1/inflight: 0 0` and clean dmesg: the device
+completed every command; the results were never delivered. The 232 also
+checks out arithmetically: ~13 submit-triggered overflow flushes x 16 CQEs
++ the initial un-overflowed fills.
 
-- kvio branch of `mcgrof/LMCache`, LMCache 0.5.3 / vLLM 0.27.1, Python 3.12,
-  `maturin develop --release` for `rust/raw_block`
-- Linux 7.2.0-rc1 (tip), x86_64, AMD EPYC 9124, AMD-Vi translated (DMA-FQ)
-- Samsung PM9A3 1.9TB, MDTS 9 (2 MiB), blank/unmounted,
-  `max_hw_sectors_kb=128`, `max_sectors_kb=128`
-- Also reproduced on a kernel with `max_hw_sectors_kb=2048` /
-  `max_sectors_kb=2048`, so it is independent of the transfer limits.
+## It is a race, not a count threshold (falsification data)
 
-## Observed state (samples at 20 s, 60 s, 120 s)
+Bisecting showed neither command count nor object size is the variable:
 
-```
-=== t=20s ===   PID 8279 STAT Sl WCHAN futex_do_wait %CPU 28.3
-=== t=60s ===   PID 8279 STAT Sl WCHAN futex_do_wait %CPU 17.2
-=== t=120s ===  PID 8279 STAT Rl WCHAN futex_do_wait %CPU 11.1
+| config | store cmds | bytes | result (N=3) |
+|---|---|---|---|
+| 126 MiB @ 2M mdts | 64 | 126 MiB | COMPLETE |
+| 126 MiB @ 512K | 253 | 126 MiB | COMPLETE |
+| 126 MiB @ 128K | 1009 | 126 MiB | HANG |
+| 12 MiB @ 128K | 97 | 12 MiB | HANG |
+| 6 MiB @ 64K | 97 | 6 MiB | COMPLETE |
+| 3 MiB @ 32K | 97 | 3 MiB | COMPLETE |
 
-threads (all seven, at every sample):
-  TID 8279 8281 8282 8283 8284 8285 8286   STAT Sl   WCHAN futex_do_wait
+At a fixed 97 commands, sweeping per-command size shows a **danger band**
+(N=2 each): 32K completes, 64K marginal, **96K–160K hang**, 192K+ complete —
+the default `--mdts-bytes 131072` sits in the middle of it. The race is
+completion timing vs. submission pacing: commands that complete very fast
+are reaped before the 16-CQE ring ever overflows; very slow commands
+complete gradually after submission ends and are reaped via eventfd wakeups
+as they trickle in; the mid-band bursts 8-at-a-time into a 16-slot ring
+during submission, trips the sticky overflow bit, and strands. Onset is
+probabilistic near the band edges (e.g. 66 cmds hung 1/5 at 8.1 MiB).
 
-/proc/<pid>/stack (identical at every sample):
-  [<0>] futex_do_wait+0x3a/0x80
-  [<0>] __futex_wait+0x99/0x110
-  [<0>] futex_wait+0x7b/0x140
-  [<0>] do_futex+0xf1/0x2d0
-  [<0>] __x64_sys_futex+0x129/0x200
-  [<0>] x64_sys_call+0x2158/0x26e0
+Consistent with the mechanism, raising the queue depth makes it vanish:
+qd=8 hangs 5/5 across configs; **qd=16/32/64/128/256 completed 23/23**.
 
-/sys/block/nvme2n1/inflight:   0   0     (at every sample)
-loadavg:                       0.93 -> 0.52 -> 0.19
-dmesg:                         clean (only normal nvme probe messages)
-```
+Only the store path is exposed: loads issue one command at a time
+(core.py:1436), and the block-device engines don't have the mdts fan-out at
+all (`_write_buffers` issues the object as one write) — matching the
+original observation that `--engine io_uring` completes in ~100 ms.
 
-The decaying %CPU is the initial burst averaged over a lengthening idle
-window; the process performs no work after the first moments.
+**Introducing commit**: 7021790b ("Missing io_uring changes and introducing
+nvme io_uring_cmd (passthrough) changes (#3274)") added both the unbounded
+fan-out and the uring_cmd worker path. The earlier eventfd/epoll rework
+(4fb03710) is *not* the regression — the pre-image polled at 10µs with the
+same submit-only kernel entry, so it would strand identically, just spinning
+instead of sleeping.
 
-## Why this looks like userspace, not the kernel or device
+## Fixes (independent; both worth doing)
 
-- `inflight` is `0 0` at every sample: the block layer has no outstanding
-  requests, so no NVMe command is pending completion.
-- No timeouts, resets, or errors in `dmesg` across the whole run.
-- The same 126 MiB object completes in ~100-200 ms through the *block-device*
-  engines on the same device and kernel:
-  `--engine io_uring --odirect --device /dev/nvme2n1` reports
-  `load p50 86 ms / 1580 MB/s`, `--engine posix` reports `load p50 31 ms`.
-- Every thread, including the main thread, is parked in `futex_do_wait`.
+1. **Throttle on outstanding, not SQ occupancy** (lib.rs:1568):
+   `available = min(ring_size, cq_entries).saturating_sub(in_flight.len())`
+   — the `in_flight` map already tracks exactly the right quantity. This
+   keeps completions inside CQ capacity so overflow never starts.
+2. **Flush overflow on idle wakeups**: when the eventfd fires and
+   `IORING_SQ_CQ_OVERFLOW` is set in the ring's sq_flags, call
+   `submitter.submit()` (or `io_uring_enter(0, GETEVENTS)`) even with an
+   empty queue, then re-reap. This makes the worker robust to overflow from
+   any cause, not just this one.
 
-## Scaling / smaller objects
+Defense in depth: also consider `setup_cqsize(ring_size * 4)` and honoring
+the library's own `DEFAULT_IOURING_QUEUE_DEPTH = 256` in the example runner
+instead of the hardcoded 8.
 
-Not yet bisected against object size. Given the split arithmetic, a smaller
-model would be the natural next data point — e.g. Llama-3.2-1B (8 MiB per
-256-token chunk) is 64 commands at the default split, and 4 commands with
-`--mdts-bytes 2097152`. If the hang is a queue-depth or completion-batching
-issue in the worker pool, there should be a threshold in command count where
-it appears.
-
-## Side note on `--mdts-bytes`
-
-Unrelated to the hang, but worth a documentation line: `--mdts-bytes`
-defaults to 131072, so an A/B that intends to compare kernel transfer limits
-issues 128 KiB commands in both arms unless the flag is raised. Also, a
-2 MiB passthrough command from a page-scattered buffer fails with
-`[Errno 22] io_uring I/O error` even when `max_hw_sectors` allows it, because
-`NVME_MAX_SEGS` is 256 (256 x 4 KiB = 1 MiB); reaching 2 MiB commands needs
-physically contiguous buffers.
+**Workaround for users today**: pass a queue depth ≥16 (or use
+`--mdts-bytes` outside the 64K–160K band), though both merely make the race
+unlikely rather than impossible.
 
 ## Context
 
 Found while using kvio as an independent check of an NVMe transfer-limit
-patch series; the full write-up of that comparison (including the block-path
-results kvio produced successfully) is at
+patch series:
 https://github.com/davidlohr/dma-opt-clamp-report/blob/main/kvio-analysis.md
