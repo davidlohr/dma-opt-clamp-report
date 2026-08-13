@@ -234,8 +234,15 @@ increasing order of ambition:
    PRP lists; the driver deliberately supports "a single descriptor's worth".
    Lifting that is the most general fix and the most invasive.
 
-Option 1 is the natural follow-on to this series: it removes the contiguity
-requirement for the substantial population of PRP-only devices, at which
-point the opt-in's ceiling is reachable with ordinary buffers. Options 2 and
-3 are worth raising with the nvme maintainers rather than attempting blind —
-the SGL-required cases are the crux.
+Option 1 is now **implemented and verified** as patch 3/3 of the series
+("nvme-pci: don't apply the SGL segment limit to PRP-only controllers"). On
+the PM9A3 (`sgls == 0`): `max_segments` goes 256 → 513, and 2MB O_DIRECT
+reads from `malloc` buffers stop splitting — interrupts/GB drop from ~1230
+to ~660, converging on the contiguous-buffer figure, with slightly lower
+sys%. Honest caveat from the A/B: raw bandwidth at QD8 on this drive was ~7%
+*higher* with the splits (two 1MB commands pipeline better than one 2MB
+command there), so the fix is an efficiency/limit-correctness win, not a
+bandwidth win per se — and it matters on stock kernels too, since
+identity-mapped systems already run `max_hw_sectors` at MDTS today. Options
+2 and 3 remain worth raising with the nvme maintainers — the SGL-required
+cases are the crux.
