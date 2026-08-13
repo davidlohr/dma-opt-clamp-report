@@ -1,0 +1,725 @@
++ grep -q nvme1n1p2 /proc/mdstat
++ mdadm /dev/md0 --fail /dev/nvme1n1p2
+mdadm: set /dev/nvme1n1p2 faulty in /dev/md0
++ sleep 2
++ mdadm /dev/md0 --remove /dev/nvme1n1p2
+mdadm: hot removed /dev/nvme1n1p2 from /dev/md0
++ mdadm --zero-superblock /dev/nvme1n1p2
++ head -4 /proc/mdstat
+Personalities : [raid1] [raid0] [raid6] [raid5] [raid4] [raid10] 
+md0 : active raid1 nvme0n1p2[0]
+      468194112 blocks super 1.2 [2/1] [U_]
+      bitmap: 2/4 pages [8KB], 65536KB chunk
++ MICP=/dev/nvme1n1p2
++ MICD=nvme1n1
++ SAMB=nvme2n1
++ echo 4096
++ echo '=== precondition raw Micron partition 0-120G ==='
+=== precondition raw Micron partition 0-120G ===
++ echo 2048
++ fio --name=pre --filename=/dev/nvme1n1p2 --direct=1 --ioengine=io_uring --rw=write --bs=1M --iodepth=32 --size=120g --output-format=terse
++ echo 'precondition rc=0'
+precondition rc=0
++ for rep in 1 2 3 4 5
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 512 micWraw 1 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=512 label=micWraw rep=1 off=0
++ echo 512
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=5057172 4727017177'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=5216767 4890442457'
++ python3 - micWraw 1 512 5057172 4727017177 5216767 4890442457
+RESULT label=micWraw rep=1 msk=512 bw_MiBps=3468 avg_cmd_KiB=512 p99_us=6193 sys=3.2
++ run /dev/nvme1n1p2 nvme1n1 512 micBraw 1 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=512 label=micBraw rep=1 off=150
++ echo 512
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=5216767 4890442457'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=5375164 5052640985'
++ python3 - micBraw 1 512 5216767 4890442457 5375164 5052640985
+RESULT label=micBraw rep=1 msk=512 bw_MiBps=3442 avg_cmd_KiB=512 p99_us=6193 sys=3.1
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 1024 micWraw 1 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=1024 label=micWraw rep=1 off=0
++ echo 1024
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=5375164 5052640985'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=5459477 5225314009'
++ python3 - micWraw 1 1024 5375164 5052640985 5459477 5225314009
+RESULT label=micWraw rep=1 msk=1024 bw_MiBps=3666 avg_cmd_KiB=1024 p99_us=9896 sys=3.2
++ run /dev/nvme1n1p2 nvme1n1 1024 micBraw 1 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=1024 label=micBraw rep=1 off=150
++ echo 1024
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=5459477 5225314009'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=5542392 5395123929'
++ python3 - micBraw 1 1024 5459477 5225314009 5542392 5395123929
+RESULT label=micBraw rep=1 msk=1024 bw_MiBps=3602 avg_cmd_KiB=1024 p99_us=10027 sys=3.2
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 2048 micWraw 1 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=2048 label=micWraw rep=1 off=0
++ echo 2048
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=5542392 5395123929'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=5587039 5577998041'
++ python3 - micWraw 1 2048 5542392 5395123929 5587039 5577998041
+RESULT label=micWraw rep=1 msk=2048 bw_MiBps=3880 avg_cmd_KiB=2048 p99_us=17170 sys=3.4
++ run /dev/nvme1n1p2 nvme1n1 2048 micBraw 1 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=2048 label=micBraw rep=1 off=150
++ echo 2048
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=5587039 5577998041'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=5630354 5755416281'
++ python3 - micBraw 1 2048 5587039 5577998041 5630354 5755416281
+RESULT label=micBraw rep=1 msk=2048 bw_MiBps=3762 avg_cmd_KiB=2048 p99_us=18219 sys=3.6
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 4096 micWraw 1 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=4096 label=micWraw rep=1 off=0
++ echo 4096
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=5630354 5755416281'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=5656830 5972307673'
++ python3 - micWraw 1 4096 5630354 5755416281 5656830 5972307673
+RESULT label=micWraw rep=1 msk=4096 bw_MiBps=4599 avg_cmd_KiB=4096 p99_us=28443 sys=3.6
++ run /dev/nvme1n1p2 nvme1n1 4096 micBraw 1 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=4096 label=micBraw rep=1 off=150
++ echo 4096
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=5656830 5972307673'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=5683653 6192041689'
++ python3 - micBraw 1 4096 5656830 5972307673 5683653 6192041689
+RESULT label=micBraw rep=1 msk=4096 bw_MiBps=4658 avg_cmd_KiB=4096 p99_us=30802 sys=3.6
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 512 samBH 1 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=512 label=samBH rep=1 off=0
++ echo 512
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=141 6384'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=309540 316830960'
++ python3 - samBH 1 512 141 6384 309540 316830960
+RESULT label=samBH rep=1 msk=512 bw_MiBps=6725 avg_cmd_KiB=512 p99_us=2376 sys=3.9
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 1024 samBH 1 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=1024 label=samBH rep=1 off=0
++ echo 1024
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=309540 316830960'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=464272 633722096'
++ python3 - samBH 1 1024 309540 316830960 464272 633722096
+RESULT label=samBH rep=1 msk=1024 bw_MiBps=6726 avg_cmd_KiB=1024 p99_us=4751 sys=4.5
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 2048 samBH 1 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=2048 label=samBH rep=1 off=0
++ echo 2048
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=464272 633722096'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=536871 931087600'
++ python3 - samBH 1 2048 464272 633722096 536871 931087600
+RESULT label=samBH rep=1 msk=2048 bw_MiBps=6310 avg_cmd_KiB=2048 p99_us=10158 sys=4.1
++ for rep in 1 2 3 4 5
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 512 micWraw 2 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=512 label=micWraw rep=2 off=0
++ echo 512
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=5683653 6192041689'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=5843214 6355432153'
++ python3 - micWraw 2 512 5683653 6192041689 5843214 6355432153
+RESULT label=micWraw rep=2 msk=512 bw_MiBps=3468 avg_cmd_KiB=512 p99_us=6062 sys=3.0
++ run /dev/nvme1n1p2 nvme1n1 512 micBraw 2 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=512 label=micBraw rep=2 off=150
++ echo 512
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=5843214 6355432153'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6001577 6517595865'
++ python3 - micBraw 2 512 5843214 6355432153 6001577 6517595865
+RESULT label=micBraw rep=2 msk=512 bw_MiBps=3441 avg_cmd_KiB=512 p99_us=6193 sys=3.0
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 1024 micWraw 2 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=1024 label=micWraw rep=2 off=0
++ echo 1024
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6001577 6517595865'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6085828 6690141913'
++ python3 - micWraw 2 1024 6001577 6517595865 6085828 6690141913
+RESULT label=micWraw rep=2 msk=1024 bw_MiBps=3662 avg_cmd_KiB=1024 p99_us=9896 sys=3.2
++ run /dev/nvme1n1p2 nvme1n1 1024 micBraw 2 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=1024 label=micBraw rep=2 off=150
++ echo 1024
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6085828 6690141913'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6168916 6860306137'
++ python3 - micBraw 2 1024 6085828 6690141913 6168916 6860306137
+RESULT label=micBraw rep=2 msk=1024 bw_MiBps=3610 avg_cmd_KiB=1024 p99_us=10027 sys=3.1
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 2048 micWraw 2 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=2048 label=micWraw rep=2 off=0
++ echo 2048
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6168916 6860306137'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6212657 7039469273'
++ python3 - micWraw 2 2048 6168916 6860306137 6212657 7039469273
+RESULT label=micWraw rep=2 msk=2048 bw_MiBps=3801 avg_cmd_KiB=2048 p99_us=17433 sys=3.6
++ run /dev/nvme1n1p2 nvme1n1 2048 micBraw 2 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=2048 label=micBraw rep=2 off=150
++ echo 2048
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6212657 7039469273'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6257464 7222998745'
++ python3 - micBraw 2 2048 6212657 7039469273 6257464 7222998745
+RESULT label=micBraw rep=2 msk=2048 bw_MiBps=3894 avg_cmd_KiB=2048 p99_us=17957 sys=3.5
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 4096 micWraw 2 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=4096 label=micWraw rep=2 off=0
++ echo 4096
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6257464 7222998745'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6284178 7441839833'
++ python3 - micWraw 2 4096 6257464 7222998745 6284178 7441839833
+RESULT label=micWraw rep=2 msk=4096 bw_MiBps=4641 avg_cmd_KiB=4096 p99_us=28180 sys=3.5
++ run /dev/nvme1n1p2 nvme1n1 4096 micBraw 2 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=4096 label=micBraw rep=2 off=150
++ echo 4096
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6284178 7441839833'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6311291 7663949529'
++ python3 - micBraw 2 4096 6284178 7441839833 6311291 7663949529
+RESULT label=micBraw rep=2 msk=4096 bw_MiBps=4722 avg_cmd_KiB=4096 p99_us=30540 sys=3.5
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 512 samBH 2 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=512 label=samBH rep=2 off=0
++ echo 512
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=536871 931087600'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=846267 1247909104'
++ python3 - samBH 2 512 536871 931087600 846267 1247909104
+RESULT label=samBH rep=2 msk=512 bw_MiBps=6725 avg_cmd_KiB=512 p99_us=2376 sys=3.7
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 1024 samBH 2 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=1024 label=samBH rep=2 off=0
++ echo 1024
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=846267 1247909104'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=1001003 1564808432'
++ python3 - samBH 2 1024 846267 1247909104 1001003 1564808432
+RESULT label=samBH rep=2 msk=1024 bw_MiBps=6726 avg_cmd_KiB=1024 p99_us=4751 sys=4.1
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 2048 samBH 2 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=2048 label=samBH rep=2 off=0
++ echo 2048
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=1001003 1564808432'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=1073610 1862206704'
++ python3 - samBH 2 2048 1001003 1564808432 1073610 1862206704
+RESULT label=samBH rep=2 msk=2048 bw_MiBps=6311 avg_cmd_KiB=2048 p99_us=10158 sys=4.5
++ for rep in 1 2 3 4 5
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 512 micWraw 3 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=512 label=micWraw rep=3 off=0
++ echo 512
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6311291 7663949529'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6470828 7827315417'
++ python3 - micWraw 3 512 6311291 7663949529 6470828 7827315417
+RESULT label=micWraw rep=3 msk=512 bw_MiBps=3468 avg_cmd_KiB=512 p99_us=6128 sys=3.1
++ run /dev/nvme1n1p2 nvme1n1 512 micBraw 3 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=512 label=micBraw rep=3 off=150
++ echo 512
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6470828 7827315417'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6629286 7989576409'
++ python3 - micBraw 3 512 6470828 7827315417 6629286 7989576409
+RESULT label=micBraw rep=3 msk=512 bw_MiBps=3443 avg_cmd_KiB=512 p99_us=6193 sys=3.2
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 1024 micWraw 3 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=1024 label=micWraw rep=3 off=0
++ echo 1024
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6629286 7989576409'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6713704 8162464473'
++ python3 - micWraw 3 1024 6629286 7989576409 6713704 8162464473
+RESULT label=micWraw rep=3 msk=1024 bw_MiBps=3668 avg_cmd_KiB=1024 p99_us=9765 sys=3.2
++ run /dev/nvme1n1p2 nvme1n1 1024 micBraw 3 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=1024 label=micBraw rep=3 off=150
++ echo 1024
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6713704 8162464473'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6796846 8332739289'
++ python3 - micBraw 3 1024 6713704 8162464473 6796846 8332739289
+RESULT label=micBraw rep=3 msk=1024 bw_MiBps=3613 avg_cmd_KiB=1024 p99_us=10027 sys=3.1
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 2048 micWraw 3 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=2048 label=micWraw rep=3 off=0
++ echo 2048
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6796846 8332739289'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6841498 8515633881'
++ python3 - micWraw 3 2048 6796846 8332739289 6841498 8515633881
+RESULT label=micWraw rep=3 msk=2048 bw_MiBps=3880 avg_cmd_KiB=2048 p99_us=17170 sys=3.2
++ run /dev/nvme1n1p2 nvme1n1 2048 micBraw 3 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=2048 label=micBraw rep=3 off=150
++ echo 2048
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6841498 8515633881'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6885109 8694264537'
++ python3 - micBraw 3 2048 6841498 8515633881 6885109 8694264537
+RESULT label=micBraw rep=3 msk=2048 bw_MiBps=3792 avg_cmd_KiB=2048 p99_us=18219 sys=3.3
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 4096 micWraw 3 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=4096 label=micWraw rep=3 off=0
++ echo 4096
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6885109 8694264537'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6912273 8916792025'
++ python3 - micWraw 3 4096 6885109 8694264537 6912273 8916792025
+RESULT label=micWraw rep=3 msk=4096 bw_MiBps=4719 avg_cmd_KiB=4096 p99_us=27918 sys=3.6
++ run /dev/nvme1n1p2 nvme1n1 4096 micBraw 3 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=4096 label=micBraw rep=3 off=150
++ echo 4096
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6912273 8916792025'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=6938721 9133454041'
++ python3 - micBraw 3 4096 6912273 8916792025 6938721 9133454041
+RESULT label=micBraw rep=3 msk=4096 bw_MiBps=4589 avg_cmd_KiB=4096 p99_us=31326 sys=3.5
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 512 samBH 3 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=512 label=samBH rep=3 off=0
++ echo 512
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=1073610 1862206704'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=1383013 2179035376'
++ python3 - samBH 3 512 1073610 1862206704 1383013 2179035376
+RESULT label=samBH rep=3 msk=512 bw_MiBps=6725 avg_cmd_KiB=512 p99_us=2376 sys=3.7
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 1024 samBH 3 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=1024 label=samBH rep=3 off=0
++ echo 1024
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=1383013 2179035376'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=1537752 2495940848'
++ python3 - samBH 3 1024 1383013 2179035376 1537752 2495940848
+RESULT label=samBH rep=3 msk=1024 bw_MiBps=6726 avg_cmd_KiB=1024 p99_us=4751 sys=4.5
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 2048 samBH 3 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=2048 label=samBH rep=3 off=0
++ echo 2048
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=1537752 2495940848'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=1610352 2793310448'
++ python3 - samBH 3 2048 1537752 2495940848 1610352 2793310448
+RESULT label=samBH rep=3 msk=2048 bw_MiBps=6310 avg_cmd_KiB=2048 p99_us=10158 sys=4.7
++ for rep in 1 2 3 4 5
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 512 micWraw 4 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=512 label=micWraw rep=4 off=0
++ echo 512
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=6938721 9133454041'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=7098362 9296926425'
++ python3 - micWraw 4 512 6938721 9133454041 7098362 9296926425
+RESULT label=micWraw rep=4 msk=512 bw_MiBps=3469 avg_cmd_KiB=512 p99_us=6062 sys=3.1
++ run /dev/nvme1n1p2 nvme1n1 512 micBraw 4 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=512 label=micBraw rep=4 off=150
++ echo 512
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=7098362 9296926425'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=7256783 9459149529'
++ python3 - micBraw 4 512 7098362 9296926425 7256783 9459149529
+RESULT label=micBraw rep=4 msk=512 bw_MiBps=3441 avg_cmd_KiB=512 p99_us=6259 sys=3.1
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 1024 micWraw 4 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=1024 label=micWraw rep=4 off=0
++ echo 1024
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=7256783 9459149529'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=7341176 9631986393'
++ python3 - micWraw 4 1024 7256783 9459149529 7341176 9631986393
+RESULT label=micWraw rep=4 msk=1024 bw_MiBps=3666 avg_cmd_KiB=1024 p99_us=9896 sys=3.2
++ run /dev/nvme1n1p2 nvme1n1 1024 micBraw 4 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=1024 label=micBraw rep=4 off=150
++ echo 1024
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=7341176 9631986393'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=7424299 9802222297'
++ python3 - micBraw 4 1024 7341176 9631986393 7424299 9802222297
+RESULT label=micBraw rep=4 msk=1024 bw_MiBps=3612 avg_cmd_KiB=1024 p99_us=10027 sys=3.1
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 2048 micWraw 4 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=2048 label=micWraw rep=4 off=0
++ echo 2048
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=7424299 9802222297'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=7468954 9985129177'
++ python3 - micWraw 4 2048 7424299 9802222297 7468954 9985129177
+RESULT label=micWraw rep=4 msk=2048 bw_MiBps=3880 avg_cmd_KiB=2048 p99_us=17170 sys=3.7
++ run /dev/nvme1n1p2 nvme1n1 2048 micBraw 4 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=2048 label=micBraw rep=4 off=150
++ echo 2048
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=7468954 9985129177'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=7513365 10167036633'
++ python3 - micBraw 4 2048 7468954 9985129177 7513365 10167036633
+RESULT label=micBraw rep=4 msk=2048 bw_MiBps=3866 avg_cmd_KiB=2048 p99_us=17957 sys=3.5
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 4096 micWraw 4 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=4096 label=micWraw rep=4 off=0
++ echo 4096
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=7513365 10167036633'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=7540324 10387884761'
++ python3 - micWraw 4 4096 7513365 10167036633 7540324 10387884761
+RESULT label=micWraw rep=4 msk=4096 bw_MiBps=4684 avg_cmd_KiB=4096 p99_us=28180 sys=3.6
++ run /dev/nvme1n1p2 nvme1n1 4096 micBraw 4 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=4096 label=micBraw rep=4 off=150
++ echo 4096
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=7540324 10387884761'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=7566976 10606217945'
++ python3 - micBraw 4 4096 7540324 10387884761 7566976 10606217945
+RESULT label=micBraw rep=4 msk=4096 bw_MiBps=4624 avg_cmd_KiB=4096 p99_us=31064 sys=3.6
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 512 samBH 4 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=512 label=samBH rep=4 off=0
++ echo 512
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=1610352 2793310448'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=1919752 3110136048'
++ python3 - samBH 4 512 1610352 2793310448 1919752 3110136048
+RESULT label=samBH rep=4 msk=512 bw_MiBps=6725 avg_cmd_KiB=512 p99_us=2408 sys=4.9
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 1024 samBH 4 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=1024 label=samBH rep=4 off=0
++ echo 1024
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=1919752 3110136048'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=2074487 3427033328'
++ python3 - samBH 4 1024 1919752 3110136048 2074487 3427033328
+RESULT label=samBH rep=4 msk=1024 bw_MiBps=6726 avg_cmd_KiB=1024 p99_us=4751 sys=4.7
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 2048 samBH 4 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=2048 label=samBH rep=4 off=0
++ echo 2048
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=2074487 3427033328'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=2147090 3724415216'
++ python3 - samBH 4 2048 2074487 3427033328 2147090 3724415216
+RESULT label=samBH rep=4 msk=2048 bw_MiBps=6310 avg_cmd_KiB=2048 p99_us=10158 sys=4.7
++ for rep in 1 2 3 4 5
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 512 micWraw 5 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=512 label=micWraw rep=5 off=0
++ echo 512
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=7566976 10606217945'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=7726716 10769791705'
++ python3 - micWraw 5 512 7566976 10606217945 7726716 10769791705
+RESULT label=micWraw rep=5 msk=512 bw_MiBps=3473 avg_cmd_KiB=512 p99_us=6128 sys=3.2
++ run /dev/nvme1n1p2 nvme1n1 512 micBraw 5 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=512 label=micBraw rep=5 off=150
++ echo 512
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=7726716 10769791705'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=7885217 10932096729'
++ python3 - micBraw 5 512 7726716 10769791705 7885217 10932096729
+RESULT label=micBraw rep=5 msk=512 bw_MiBps=3444 avg_cmd_KiB=512 p99_us=6193 sys=3.2
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 1024 micWraw 5 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=1024 label=micWraw rep=5 off=0
++ echo 1024
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=7885217 10932096729'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=7969561 11104833241'
++ python3 - micWraw 5 1024 7885217 10932096729 7969561 11104833241
+RESULT label=micWraw rep=5 msk=1024 bw_MiBps=3666 avg_cmd_KiB=1024 p99_us=9896 sys=3.2
++ run /dev/nvme1n1p2 nvme1n1 1024 micBraw 5 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=1024 label=micBraw rep=5 off=150
++ echo 1024
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=7969561 11104833241'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=8052627 11274952409'
++ python3 - micBraw 5 1024 7969561 11104833241 8052627 11274952409
+RESULT label=micBraw rep=5 msk=1024 bw_MiBps=3611 avg_cmd_KiB=1024 p99_us=10027 sys=3.2
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 2048 micWraw 5 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=2048 label=micWraw rep=5 off=0
++ echo 2048
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=8052627 11274952409'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=8096375 11454144217'
++ python3 - micWraw 5 2048 8052627 11274952409 8096375 11454144217
+RESULT label=micWraw rep=5 msk=2048 bw_MiBps=3801 avg_cmd_KiB=2048 p99_us=17433 sys=3.6
++ run /dev/nvme1n1p2 nvme1n1 2048 micBraw 5 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=2048 label=micBraw rep=5 off=150
++ echo 2048
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=8096375 11454144217'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=8140715 11635760857'
++ python3 - micBraw 5 2048 8096375 11454144217 8140715 11635760857
+RESULT label=micBraw rep=5 msk=2048 bw_MiBps=3840 avg_cmd_KiB=2048 p99_us=17957 sys=3.6
++ for msk in 512 1024 2048 4096
++ run /dev/nvme1n1p2 nvme1n1 4096 micWraw 5 0
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=4096 label=micWraw rep=5 off=0
++ echo 4096
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=8140715 11635760857'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=8167667 11856551641'
++ python3 - micWraw 5 4096 8140715 11635760857 8167667 11856551641
+RESULT label=micWraw rep=5 msk=4096 bw_MiBps=4682 avg_cmd_KiB=4096 p99_us=27918 sys=3.6
++ run /dev/nvme1n1p2 nvme1n1 4096 micBraw 5 150
++ local tgt=/dev/nvme1n1p2 sd=nvme1n1 msk=4096 label=micBraw rep=5 off=150
++ echo 4096
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=8167667 11856551641'
++ fio --name=p --filename=/dev/nvme1n1p2 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset=150g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme1n1
+++ awk -v d=nvme1n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=8193694 12069764825'
++ python3 - micBraw 5 4096 8167667 11856551641 8193694 12069764825
+RESULT label=micBraw rep=5 msk=4096 bw_MiBps=4528 avg_cmd_KiB=4096 p99_us=31850 sys=3.5
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 512 samBH 5 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=512 label=samBH rep=5 off=0
++ echo 512
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=2147090 3724415216'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=2456486 4041236720'
++ python3 - samBH 5 512 2147090 3724415216 2456486 4041236720
+RESULT label=samBH rep=5 msk=512 bw_MiBps=6725 avg_cmd_KiB=512 p99_us=2408 sys=4.9
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 1024 samBH 5 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=1024 label=samBH rep=5 off=0
++ echo 1024
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=2456486 4041236720'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=2611220 4358131952'
++ python3 - samBH 5 1024 2456486 4041236720 2611220 4358131952
+RESULT label=samBH rep=5 msk=1024 bw_MiBps=6726 avg_cmd_KiB=1024 p99_us=4751 sys=4.0
++ for msk in 512 1024 2048
++ run /dev/nvme2n1 nvme2n1 2048 samBH 5 0
++ local tgt=/dev/nvme2n1 sd=nvme2n1 msk=2048 label=samBH rep=5 off=0
++ echo 2048
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'b=2611220 4358131952'
++ fio --name=p --filename=/dev/nvme2n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset=0g --offset_increment=25g --size=22g --iomem=mmaphuge --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme2n1
+++ awk -v d=nvme2n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'a=2683819 4655497456'
++ python3 - samBH 5 2048 2611220 4358131952 2683819 4655497456
+RESULT label=samBH rep=5 msk=2048 bw_MiBps=6310 avg_cmd_KiB=2048 p99_us=10158 sys=3.9
++ echo 1280
++ echo MDTS_PROBE4_DONE
+MDTS_PROBE4_DONE

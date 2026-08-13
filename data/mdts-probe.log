@@ -1,0 +1,920 @@
++ uname -r
+6.8.0-137-generic
++ cat /proc/cmdline
+BOOT_IMAGE=/boot/vmlinuz-6.8.0-137-generic root=UUID=cd1be1a6-a49c-4e6a-9c36-eaebb8d8c7a2 ro console=tty1 console=ttyS1,115200n8 nomodeset module_blacklist=af_alg,algif_hash,algif_skcipher,algif_rng,algif_aead amd_iommu=on iommu=pt
++ apt-get -qq update
++ apt-get -qq install -y fio nvme-cli
++ echo '=== GEOMETRY (the fields we failed to capture last campaign) ==='
+=== GEOMETRY (the fields we failed to capture last campaign) ===
++ for c in /dev/nvme0 /dev/nvme1 /dev/nvme2 /dev/nvme3
++ '[' -e /dev/nvme0 ']'
+++ nvme id-ctrl /dev/nvme0
+++ awk -F: '/^mn /{print $2}'
++ echo '--- /dev/nvme0  Micron_7450_MTFDKBA480TFR               '
+--- /dev/nvme0  Micron_7450_MTFDKBA480TFR               
++ nvme id-ctrl /dev/nvme0
++ grep -E '^mdts|^sqes|^cqes'
+mdts      : 10
+sqes      : 0x66
+cqes      : 0x44
++ nvme id-ns /dev/nvme0n1
++ grep -iE 'noiob|npwg|npwa|nows|npda'
+noiob   : 0
+npwg    : 7
+npwa    : 7
+npda    : 7
+nows    : 7
++ for c in /dev/nvme0 /dev/nvme1 /dev/nvme2 /dev/nvme3
++ '[' -e /dev/nvme1 ']'
+++ nvme id-ctrl /dev/nvme1
+++ awk -F: '/^mn /{print $2}'
++ echo '--- /dev/nvme1  Micron_7450_MTFDKBA480TFR               '
+--- /dev/nvme1  Micron_7450_MTFDKBA480TFR               
++ nvme id-ctrl /dev/nvme1
++ grep -E '^mdts|^sqes|^cqes'
+mdts      : 10
+sqes      : 0x66
+cqes      : 0x44
++ nvme id-ns /dev/nvme1n1
++ grep -iE 'noiob|npwg|npwa|nows|npda'
+noiob   : 0
+npwg    : 7
+npwa    : 7
+npda    : 7
+nows    : 7
++ for c in /dev/nvme0 /dev/nvme1 /dev/nvme2 /dev/nvme3
++ '[' -e /dev/nvme2 ']'
+++ nvme id-ctrl /dev/nvme2
+++ awk -F: '/^mn /{print $2}'
++ echo '--- /dev/nvme2  SAMSUNG MZQL21T9HCJR-00A07              '
+--- /dev/nvme2  SAMSUNG MZQL21T9HCJR-00A07              
++ nvme id-ctrl /dev/nvme2
++ grep -E '^mdts|^sqes|^cqes'
+mdts      : 9
+sqes      : 0x66
+cqes      : 0x44
++ nvme id-ns /dev/nvme2n1
++ grep -iE 'noiob|npwg|npwa|nows|npda'
+noiob   : 0
+npwg    : 255
+npwa    : 7
+npda    : 7
+nows    : 255
++ for c in /dev/nvme0 /dev/nvme1 /dev/nvme2 /dev/nvme3
++ '[' -e /dev/nvme3 ']'
+++ nvme id-ctrl /dev/nvme3
+++ awk -F: '/^mn /{print $2}'
++ echo '--- /dev/nvme3  SAMSUNG MZQL21T9HCJR-00A07              '
+--- /dev/nvme3  SAMSUNG MZQL21T9HCJR-00A07              
++ nvme id-ctrl /dev/nvme3
++ grep -E '^mdts|^sqes|^cqes'
+mdts      : 9
+sqes      : 0x66
+cqes      : 0x44
++ nvme id-ns /dev/nvme3n1
++ grep -iE 'noiob|npwg|npwa|nows|npda'
+noiob   : 0
+npwg    : 255
+npwa    : 7
+npda    : 7
+nows    : 255
++ echo '=== BLOCK LIMITS under iommu=pt ==='
+=== BLOCK LIMITS under iommu=pt ===
++ for b in /sys/block/nvme*n1
+++ basename /sys/block/nvme0n1
++ d=nvme0n1
+++ cat /sys/block/nvme0n1/device/model
+++ tr -d ' '
+++ cat /sys/block/nvme0n1/queue/max_hw_sectors_kb
+++ cat /sys/block/nvme0n1/queue/max_sectors_kb
+++ cat /sys/block/nvme0n1/queue/max_segments
++ echo 'nvme0n1 model=Micron_7450_MTFDKBA480TFR max_hw=4096 msk=1280 segs=128'
+nvme0n1 model=Micron_7450_MTFDKBA480TFR max_hw=4096 msk=1280 segs=128
++ for b in /sys/block/nvme*n1
+++ basename /sys/block/nvme1n1
++ d=nvme1n1
+++ cat /sys/block/nvme1n1/device/model
+++ tr -d ' '
+++ cat /sys/block/nvme1n1/queue/max_hw_sectors_kb
+++ cat /sys/block/nvme1n1/queue/max_sectors_kb
+++ cat /sys/block/nvme1n1/queue/max_segments
++ echo 'nvme1n1 model=Micron_7450_MTFDKBA480TFR max_hw=4096 msk=1280 segs=128'
+nvme1n1 model=Micron_7450_MTFDKBA480TFR max_hw=4096 msk=1280 segs=128
++ for b in /sys/block/nvme*n1
+++ basename /sys/block/nvme2n1
++ d=nvme2n1
+++ cat /sys/block/nvme2n1/device/model
+++ tr -d ' '
+++ cat /sys/block/nvme2n1/queue/max_hw_sectors_kb
+++ cat /sys/block/nvme2n1/queue/max_sectors_kb
+++ cat /sys/block/nvme2n1/queue/max_segments
++ echo 'nvme2n1 model=SAMSUNGMZQL21T9HCJR-00A07 max_hw=2048 msk=1280 segs=128'
+nvme2n1 model=SAMSUNGMZQL21T9HCJR-00A07 max_hw=2048 msk=1280 segs=128
++ for b in /sys/block/nvme*n1
+++ basename /sys/block/nvme3n1
++ d=nvme3n1
+++ cat /sys/block/nvme3n1/device/model
+++ tr -d ' '
+++ cat /sys/block/nvme3n1/queue/max_hw_sectors_kb
+++ cat /sys/block/nvme3n1/queue/max_sectors_kb
+++ cat /sys/block/nvme3n1/queue/max_segments
++ echo 'nvme3n1 model=SAMSUNGMZQL21T9HCJR-00A07 max_hw=2048 msk=1280 segs=128'
+nvme3n1 model=SAMSUNGMZQL21T9HCJR-00A07 max_hw=2048 msk=1280 segs=128
++ echo '=== IOMMU ==='
+=== IOMMU ===
++ ls /sys/kernel/iommu_groups/
++ wc -l
+49
++ for b in /sys/block/nvme*n1
+++ readlink -f /sys/block/nvme0n1/device/device/iommu_group
++ g=/sys/kernel/iommu_groups/10
++ '[' -n /sys/kernel/iommu_groups/10 ']'
+++ basename /sys/block/nvme0n1
+++ cat /sys/kernel/iommu_groups/10/type
++ echo 'nvme0n1: identity'
+nvme0n1: identity
++ for b in /sys/block/nvme*n1
+++ readlink -f /sys/block/nvme1n1/device/device/iommu_group
++ g=/sys/kernel/iommu_groups/11
++ '[' -n /sys/kernel/iommu_groups/11 ']'
+++ basename /sys/block/nvme1n1
+++ cat /sys/kernel/iommu_groups/11/type
++ echo 'nvme1n1: identity'
+nvme1n1: identity
++ for b in /sys/block/nvme*n1
+++ readlink -f /sys/block/nvme2n1/device/device/iommu_group
++ g=/sys/kernel/iommu_groups/34
++ '[' -n /sys/kernel/iommu_groups/34 ']'
+++ basename /sys/block/nvme2n1
+++ cat /sys/kernel/iommu_groups/34/type
++ echo 'nvme2n1: identity'
+nvme2n1: identity
++ for b in /sys/block/nvme*n1
+++ readlink -f /sys/block/nvme3n1/device/device/iommu_group
++ g=/sys/kernel/iommu_groups/35
++ '[' -n /sys/kernel/iommu_groups/35 ']'
+++ basename /sys/block/nvme3n1
+++ cat /sys/kernel/iommu_groups/35/type
++ echo 'nvme3n1: identity'
+nvme3n1: identity
++ SAM=
++ SS=
++ for ns in /sys/block/nvme*n1
+++ basename /sys/block/nvme0n1
++ d=nvme0n1
++ grep -qi samsung /sys/block/nvme0n1/device/model
++ continue
++ for ns in /sys/block/nvme*n1
+++ basename /sys/block/nvme1n1
++ d=nvme1n1
++ grep -qi samsung /sys/block/nvme1n1/device/model
++ continue
++ for ns in /sys/block/nvme*n1
+++ basename /sys/block/nvme2n1
++ d=nvme2n1
++ grep -qi samsung /sys/block/nvme2n1/device/model
++ lsblk -n /dev/nvme2n1
++ grep -q part
+++ cat /sys/block/nvme2n1/device/serial
+++ tr -d ' '
++ s=S64GNN0WB15139
++ '[' -z '' ']'
++ SAM=nvme2n1
++ SS=S64GNN0WB15139
++ for ns in /sys/block/nvme*n1
+++ basename /sys/block/nvme3n1
++ d=nvme3n1
++ grep -qi samsung /sys/block/nvme3n1/device/model
++ lsblk -n /dev/nvme3n1
++ grep -q part
+++ cat /sys/block/nvme3n1/device/serial
+++ tr -d ' '
++ s=S64GNN0WB15118
++ '[' -z nvme2n1 ']'
++ '[' S64GNN0WB15118 '<' S64GNN0WB15139 ']'
++ SAM=nvme3n1
++ SS=S64GNN0WB15118
++++ head -1
++++ grep -li micron /sys/block/nvme0n1/device/model /sys/block/nvme1n1/device/model /sys/block/nvme2n1/device/model /sys/block/nvme3n1/device/model
++++ xargs dirname
++++ xargs dirname
+++ basename /sys/block/nvme0n1
++ MIC=nvme0n1
++ echo 'TARGETS: SAM=nvme3n1 MIC=nvme0n1'
+TARGETS: SAM=nvme3n1 MIC=nvme0n1
++ '[' -n nvme3n1 ']'
++ '[' -n nvme0n1 ']'
++ echo '=== SWEEP: Samsung control (expect flat to 1MB, ~-8% at 2MB=its MDTS) ==='
+=== SWEEP: Samsung control (expect flat to 1MB, ~-8% at 2MB=its MDTS) ===
++ for rep in 1 2 3 4 5
++ for msk in 128 512 1024 2048
++ run nvme3n1 128 128k sam 1
++ local dev=nvme3n1 msk=128 bs=128k label=sam rep=1
++ echo 128
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=141 6384'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=128k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=1236597 316539120'
++ python3 - sam 1 128 141 6384 1236597 316539120
+RESULT label=sam rep=1 msk=128 bw_MiBps=6720 avg_cmd_KiB=128 p50_us=586 p99_us=594 sys=13.3
++ for msk in 128 512 1024 2048
++ run nvme3n1 512 512k sam 1
++ local dev=nvme3n1 msk=512 bs=512k label=sam rep=1
++ echo 512
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=1236597 316539120'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=1545984 633351408'
++ python3 - sam 1 512 1236597 316539120 1545984 633351408
+RESULT label=sam rep=1 msk=512 bw_MiBps=6725 avg_cmd_KiB=512 p50_us=2376 p99_us=2376 sys=8.9
++ for msk in 128 512 1024 2048
++ run nvme3n1 1024 1024k sam 1
++ local dev=nvme3n1 msk=1024 bs=1024k label=sam rep=1
++ echo 1024
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=1545984 633351408'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=1713460 946943216'
++ python3 - sam 1 1024 1545984 633351408 1713460 946943216
+RESULT label=sam rep=1 msk=1024 bw_MiBps=6655 avg_cmd_KiB=936 p50_us=4751 p99_us=4817 sys=11.7
++ for msk in 128 512 1024 2048
++ run nvme3n1 2048 2048k sam 1
++ local dev=nvme3n1 msk=2048 bs=2048k label=sam rep=1
++ echo 2048
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=1713460 946943216'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=1795437 1245406448'
++ python3 - sam 1 2048 1713460 946943216 1795437 1245406448
+RESULT label=sam rep=1 msk=2048 bw_MiBps=6333 avg_cmd_KiB=1820 p50_us=10027 p99_us=10158 sys=11.6
++ for rep in 1 2 3 4 5
++ for msk in 128 512 1024 2048
++ run nvme3n1 128 128k sam 2
++ local dev=nvme3n1 msk=128 bs=128k label=sam rep=2
++ echo 128
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=1795437 1245406448'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=128k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=3031864 1561931760'
++ python3 - sam 2 128 1795437 1245406448 3031864 1561931760
+RESULT label=sam rep=2 msk=128 bw_MiBps=6719 avg_cmd_KiB=128 p50_us=586 p99_us=602 sys=12.7
++ for msk in 128 512 1024 2048
++ run nvme3n1 512 512k sam 2
++ local dev=nvme3n1 msk=512 bs=512k label=sam rep=2
++ echo 512
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=3031864 1561931760'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=3341264 1878757360'
++ python3 - sam 2 512 3031864 1561931760 3341264 1878757360
+RESULT label=sam rep=2 msk=512 bw_MiBps=6725 avg_cmd_KiB=512 p50_us=2376 p99_us=2376 sys=8.3
++ for msk in 128 512 1024 2048
++ run nvme3n1 1024 1024k sam 2
++ local dev=nvme3n1 msk=1024 bs=1024k label=sam rep=2
++ echo 1024
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=3341264 1878757360'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=3532318 2191777776'
++ python3 - sam 2 1024 3341264 1878757360 3532318 2191777776
+RESULT label=sam rep=2 msk=1024 bw_MiBps=6645 avg_cmd_KiB=819 p50_us=4751 p99_us=4817 sys=12.6
++ for msk in 128 512 1024 2048
++ run nvme3n1 2048 2048k sam 2
++ local dev=nvme3n1 msk=2048 bs=2048k label=sam rep=2
++ echo 2048
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=3532318 2191777776'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=3616494 2489962480'
++ python3 - sam 2 2048 3532318 2191777776 3616494 2489962480
+RESULT label=sam rep=2 msk=2048 bw_MiBps=6328 avg_cmd_KiB=1771 p50_us=10027 p99_us=10158 sys=13.2
++ for rep in 1 2 3 4 5
++ for msk in 128 512 1024 2048
++ run nvme3n1 128 128k sam 3
++ local dev=nvme3n1 msk=128 bs=128k label=sam rep=3
++ echo 128
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=3616494 2489962480'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=128k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=4853017 2806512368'
++ python3 - sam 3 128 3616494 2489962480 4853017 2806512368
+RESULT label=sam rep=3 msk=128 bw_MiBps=6720 avg_cmd_KiB=128 p50_us=586 p99_us=594 sys=13.5
++ for msk in 128 512 1024 2048
++ run nvme3n1 512 512k sam 3
++ local dev=nvme3n1 msk=512 bs=512k label=sam rep=3
++ echo 512
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=4853017 2806512368'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=5162411 3123331824'
++ python3 - sam 3 512 4853017 2806512368 5162411 3123331824
+RESULT label=sam rep=3 msk=512 bw_MiBps=6725 avg_cmd_KiB=512 p50_us=2376 p99_us=2376 sys=12.4
++ for msk in 128 512 1024 2048
++ run nvme3n1 1024 1024k sam 3
++ local dev=nvme3n1 msk=1024 bs=1024k label=sam rep=3
++ echo 1024
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=5162411 3123331824'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=5352796 3427646192'
++ python3 - sam 3 1024 5162411 3123331824 5352796 3427646192
+RESULT label=sam rep=3 msk=1024 bw_MiBps=6461 avg_cmd_KiB=799 p50_us=4882 p99_us=5014 sys=10.3
++ for msk in 128 512 1024 2048
++ run nvme3n1 2048 2048k sam 3
++ local dev=nvme3n1 msk=2048 bs=2048k label=sam rep=3
++ echo 2048
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=5352796 3427646192'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=5451368 3721259760'
++ python3 - sam 3 2048 5352796 3427646192 5451368 3721259760
+RESULT label=sam rep=3 msk=2048 bw_MiBps=6231 avg_cmd_KiB=1489 p50_us=10158 p99_us=10289 sys=12.1
++ for rep in 1 2 3 4 5
++ for msk in 128 512 1024 2048
++ run nvme3n1 128 128k sam 4
++ local dev=nvme3n1 msk=128 bs=128k label=sam rep=4
++ echo 128
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=5451368 3721259760'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=128k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=6687797 4037785584'
++ python3 - sam 4 128 5451368 3721259760 6687797 4037785584
+RESULT label=sam rep=4 msk=128 bw_MiBps=6720 avg_cmd_KiB=128 p50_us=586 p99_us=594 sys=13.4
++ for msk in 128 512 1024 2048
++ run nvme3n1 512 512k sam 4
++ local dev=nvme3n1 msk=512 bs=512k label=sam rep=4
++ echo 512
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=6687797 4037785584'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=6997189 4354602992'
++ python3 - sam 4 512 6687797 4037785584 6997189 4354602992
+RESULT label=sam rep=4 msk=512 bw_MiBps=6725 avg_cmd_KiB=512 p50_us=2376 p99_us=2376 sys=9.9
++ for msk in 128 512 1024 2048
++ run nvme3n1 1024 1024k sam 4
++ local dev=nvme3n1 msk=1024 bs=1024k label=sam rep=4
++ echo 1024
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=6997189 4354602992'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=7193402 4668233712'
++ python3 - sam 4 1024 6997189 4354602992 7193402 4668233712
+RESULT label=sam rep=4 msk=1024 bw_MiBps=6657 avg_cmd_KiB=799 p50_us=4751 p99_us=4817 sys=14.0
++ for msk in 128 512 1024 2048
++ run nvme3n1 2048 2048k sam 4
++ local dev=nvme3n1 msk=2048 bs=2048k label=sam rep=4
++ echo 2048
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=7193402 4668233712'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=7283317 4962863088'
++ python3 - sam 4 2048 7193402 4668233712 7283317 4962863088
+RESULT label=sam rep=4 msk=2048 bw_MiBps=6252 avg_cmd_KiB=1638 p50_us=10158 p99_us=10289 sys=11.7
++ for rep in 1 2 3 4 5
++ for msk in 128 512 1024 2048
++ run nvme3n1 128 128k sam 5
++ local dev=nvme3n1 msk=128 bs=128k label=sam rep=5
++ echo 128
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=7283317 4962863088'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=128k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=8519802 5279403248'
++ python3 - sam 5 128 7283317 4962863088 8519802 5279403248
+RESULT label=sam rep=5 msk=128 bw_MiBps=6720 avg_cmd_KiB=128 p50_us=586 p99_us=594 sys=13.2
++ for msk in 128 512 1024 2048
++ run nvme3n1 512 512k sam 5
++ local dev=nvme3n1 msk=512 bs=512k label=sam rep=5
++ echo 512
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=8519802 5279403248'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=8829203 5596229872'
++ python3 - sam 5 512 8519802 5279403248 8829203 5596229872
+RESULT label=sam rep=5 msk=512 bw_MiBps=6725 avg_cmd_KiB=512 p50_us=2376 p99_us=2376 sys=10.7
++ for msk in 128 512 1024 2048
++ run nvme3n1 1024 1024k sam 5
++ local dev=nvme3n1 msk=1024 bs=1024k label=sam rep=5
++ echo 1024
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=8829203 5596229872'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=9029876 5902072048'
++ python3 - sam 5 1024 8829203 5596229872 9029876 5902072048
+RESULT label=sam rep=5 msk=1024 bw_MiBps=6491 avg_cmd_KiB=762 p50_us=4882 p99_us=4948 sys=12.7
++ for msk in 128 512 1024 2048
++ run nvme3n1 2048 2048k sam 5
++ local dev=nvme3n1 msk=2048 bs=2048k label=sam rep=5
++ echo 2048
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=9029876 5902072048'
++ fio --name=p --filename=/dev/nvme3n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme3n1
+++ awk -v d=nvme3n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=9150181 6194071792'
++ python3 - sam 5 2048 9029876 5902072048 9150181 6194071792
+RESULT label=sam rep=5 msk=2048 bw_MiBps=6196 avg_cmd_KiB=1214 p50_us=10158 p99_us=10289 sys=12.5
++ echo '=== SWEEP: Micron (hypothesis: penalty appears only at ITS mdts) ==='
+=== SWEEP: Micron (hypothesis: penalty appears only at ITS mdts) ===
+++ cat /sys/block/nvme0n1/queue/max_hw_sectors_kb
++ MICMAX=4096
++ echo 'MIC max_hw=4096'
+MIC max_hw=4096
++ for rep in 1 2 3 4 5
++ for msk in 128 512 1024 2048 4096
++ '[' 128 -le 4096 ']'
++ run nvme0n1 128 128k mic 1
++ local dev=nvme0n1 msk=128 bs=128k label=mic rep=1
++ echo 128
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=5205 216138'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=128k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=930631 237125194'
++ python3 - mic 1 128 5205 216138 930631 237125194
+RESULT label=mic rep=1 msk=128 bw_MiBps=5034 avg_cmd_KiB=128 p50_us=791 p99_us=1073 sys=10.5
++ for msk in 128 512 1024 2048 4096
++ '[' 512 -le 4096 ']'
++ run nvme0n1 512 512k mic 1
++ local dev=nvme0n1 msk=512 bs=512k label=mic rep=1
++ echo 512
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=930631 237125194'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=1161983 474029642'
++ python3 - mic 1 512 930631 237125194 1161983 474029642
+RESULT label=mic rep=1 msk=512 bw_MiBps=5031 avg_cmd_KiB=512 p50_us=3162 p99_us=3490 sys=7.5
++ for msk in 128 512 1024 2048 4096
++ '[' 1024 -le 4096 ']'
++ run nvme0n1 1024 1024k mic 1
++ local dev=nvme0n1 msk=1024 bs=1024k label=mic rep=1
++ echo 1024
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=1161983 474029642'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=1295659 710807114'
++ python3 - mic 1 1024 1161983 474029642 1295659 710807114
+RESULT label=mic rep=1 msk=1024 bw_MiBps=5027 avg_cmd_KiB=886 p50_us=6259 p99_us=6980 sys=10.6
++ for msk in 128 512 1024 2048 4096
++ '[' 2048 -le 4096 ']'
++ run nvme0n1 2048 2048k mic 1
++ local dev=nvme0n1 msk=2048 bs=2048k label=mic rep=1
++ echo 2048
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=1295659 710807114'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=1378830 947822154'
++ python3 - mic 1 2048 1295659 710807114 1378830 947822154
+RESULT label=mic rep=1 msk=2048 bw_MiBps=5030 avg_cmd_KiB=1425 p50_us=12648 p99_us=13959 sys=10.2
++ for msk in 128 512 1024 2048 4096
++ '[' 4096 -le 4096 ']'
++ run nvme0n1 4096 4096k mic 1
++ local dev=nvme0n1 msk=4096 bs=4096k label=mic rep=1
++ echo 4096
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=1378830 947822154'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=1426808 1185062474'
++ python3 - mic 1 4096 1378830 947822154 1426808 1185062474
+RESULT label=mic rep=1 msk=4096 bw_MiBps=5033 avg_cmd_KiB=2472 p50_us=25297 p99_us=25821 sys=8.7
++ for rep in 1 2 3 4 5
++ for msk in 128 512 1024 2048 4096
++ '[' 128 -le 4096 ']'
++ run nvme0n1 128 128k mic 2
++ local dev=nvme0n1 msk=128 bs=128k label=mic rep=2
++ echo 128
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=1426808 1185062474'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=128k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=2352354 1422002250'
++ python3 - mic 2 128 1426808 1185062474 2352354 1422002250
+RESULT label=mic rep=2 msk=128 bw_MiBps=5034 avg_cmd_KiB=128 p50_us=791 p99_us=1073 sys=10.2
++ for msk in 128 512 1024 2048 4096
++ '[' 512 -le 4096 ']'
++ run nvme0n1 512 512k mic 2
++ local dev=nvme0n1 msk=512 bs=512k label=mic rep=2
++ echo 512
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=2352354 1422002250'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=2583842 1659045186'
++ python3 - mic 2 512 2352354 1422002250 2583842 1659045186
+RESULT label=mic rep=2 msk=512 bw_MiBps=5035 avg_cmd_KiB=512 p50_us=3162 p99_us=3490 sys=7.1
++ for msk in 128 512 1024 2048 4096
++ '[' 1024 -le 4096 ']'
++ run nvme0n1 1024 1024k mic 2
++ local dev=nvme0n1 msk=1024 bs=1024k label=mic rep=2
++ echo 1024
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=2583842 1659045186'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=2735604 1895855426'
++ python3 - mic 2 1024 2583842 1659045186 2735604 1895855426
+RESULT label=mic rep=2 msk=1024 bw_MiBps=5028 avg_cmd_KiB=780 p50_us=6259 p99_us=6980 sys=11.3
++ for msk in 128 512 1024 2048 4096
++ '[' 2048 -le 4096 ']'
++ run nvme0n1 2048 2048k mic 2
++ local dev=nvme0n1 msk=2048 bs=2048k label=mic rep=2
++ echo 2048
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=2735604 1895855426'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=2811540 2132833602'
++ python3 - mic 2 2048 2735604 1895855426 2811540 2132833602
+RESULT label=mic rep=2 msk=2048 bw_MiBps=5030 avg_cmd_KiB=1560 p50_us=12517 p99_us=13828 sys=11.1
++ for msk in 128 512 1024 2048 4096
++ '[' 4096 -le 4096 ']'
++ run nvme0n1 4096 4096k mic 2
++ local dev=nvme0n1 msk=4096 bs=4096k label=mic rep=2
++ echo 4096
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=2811540 2132833602'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=2858531 2369688898'
++ python3 - mic 2 4096 2811540 2132833602 2858531 2369688898
+RESULT label=mic rep=2 msk=4096 bw_MiBps=5025 avg_cmd_KiB=2520 p50_us=25297 p99_us=25821 sys=9.0
++ for rep in 1 2 3 4 5
++ for msk in 128 512 1024 2048 4096
++ '[' 128 -le 4096 ']'
++ run nvme0n1 128 128k mic 3
++ local dev=nvme0n1 msk=128 bs=128k label=mic rep=3
++ echo 128
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=2858531 2369688898'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=128k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=3783103 2606379330'
++ python3 - mic 3 128 2858531 2369688898 3783103 2606379330
+RESULT label=mic rep=3 msk=128 bw_MiBps=5029 avg_cmd_KiB=128 p50_us=791 p99_us=1073 sys=10.7
++ for msk in 128 512 1024 2048 4096
++ '[' 512 -le 4096 ']'
++ run nvme0n1 512 512k mic 3
++ local dev=nvme0n1 msk=512 bs=512k label=mic rep=3
++ echo 512
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=3783103 2606379330'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=4014343 2843169090'
++ python3 - mic 3 512 3783103 2606379330 4014343 2843169090
+RESULT label=mic rep=3 msk=512 bw_MiBps=5029 avg_cmd_KiB=512 p50_us=3162 p99_us=3523 sys=7.7
++ for msk in 128 512 1024 2048 4096
++ '[' 1024 -le 4096 ']'
++ run nvme0n1 1024 1024k mic 3
++ local dev=nvme0n1 msk=1024 bs=1024k label=mic rep=3
++ echo 1024
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=4014343 2843169090'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=4162540 3080036690'
++ python3 - mic 3 1024 4014343 2843169090 4162540 3080036690
+RESULT label=mic rep=3 msk=1024 bw_MiBps=5029 avg_cmd_KiB=799 p50_us=6259 p99_us=6914 sys=10.4
++ for msk in 128 512 1024 2048 4096
++ '[' 2048 -le 4096 ']'
++ run nvme0n1 2048 2048k mic 3
++ local dev=nvme0n1 msk=2048 bs=2048k label=mic rep=3
++ echo 2048
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=4162540 3080036690'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=4249276 3316871506'
++ python3 - mic 3 2048 4162540 3080036690 4249276 3316871506
+RESULT label=mic rep=3 msk=2048 bw_MiBps=5027 avg_cmd_KiB=1365 p50_us=12517 p99_us=14483 sys=11.1
++ for msk in 128 512 1024 2048 4096
++ '[' 4096 -le 4096 ']'
++ run nvme0n1 4096 4096k mic 3
++ local dev=nvme0n1 msk=4096 bs=4096k label=mic rep=3
++ echo 4096
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=4249276 3316871506'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=4304494 3554120018'
++ python3 - mic 3 4096 4249276 3316871506 4304494 3554120018
+RESULT label=mic rep=3 msk=4096 bw_MiBps=5033 avg_cmd_KiB=2148 p50_us=25297 p99_us=26345 sys=8.8
++ for rep in 1 2 3 4 5
++ for msk in 128 512 1024 2048 4096
++ '[' 128 -le 4096 ']'
++ run nvme0n1 128 128k mic 4
++ local dev=nvme0n1 msk=128 bs=128k label=mic rep=4
++ echo 128
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=4304494 3554120018'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=128k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=5230016 3791053650'
++ python3 - mic 4 128 4304494 3554120018 5230016 3791053650
+RESULT label=mic rep=4 msk=128 bw_MiBps=5034 avg_cmd_KiB=128 p50_us=791 p99_us=1073 sys=10.6
++ for msk in 128 512 1024 2048 4096
++ '[' 512 -le 4096 ']'
++ run nvme0n1 512 512k mic 4
++ local dev=nvme0n1 msk=512 bs=512k label=mic rep=4
++ echo 512
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=5230016 3791053650'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=5461391 4027981650'
++ python3 - mic 4 512 5230016 3791053650 5461391 4027981650
+RESULT label=mic rep=4 msk=512 bw_MiBps=5032 avg_cmd_KiB=512 p50_us=3162 p99_us=3490 sys=8.3
++ for msk in 128 512 1024 2048 4096
++ '[' 1024 -le 4096 ']'
++ run nvme0n1 1024 1024k mic 4
++ local dev=nvme0n1 msk=1024 bs=1024k label=mic rep=4
++ echo 1024
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=5461391 4027981650'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=5591617 4265062226'
++ python3 - mic 4 1024 5461391 4027981650 5591617 4265062226
+RESULT label=mic rep=4 msk=1024 bw_MiBps=5035 avg_cmd_KiB=910 p50_us=6259 p99_us=6717 sys=11.5
++ for msk in 128 512 1024 2048 4096
++ '[' 2048 -le 4096 ']'
++ run nvme0n1 2048 2048k mic 4
++ local dev=nvme0n1 msk=2048 bs=2048k label=mic rep=4
++ echo 2048
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=5591617 4265062226'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=5669349 4501991250'
++ python3 - mic 4 2048 5591617 4265062226 5669349 4501991250
+RESULT label=mic rep=4 msk=2048 bw_MiBps=5029 avg_cmd_KiB=1524 p50_us=12517 p99_us=14090 sys=11.2
++ for msk in 128 512 1024 2048 4096
++ '[' 4096 -le 4096 ']'
++ run nvme0n1 4096 4096k mic 4
++ local dev=nvme0n1 msk=4096 bs=4096k label=mic rep=4
++ echo 4096
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=5669349 4501991250'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=5714565 4739026770'
++ python3 - mic 4 4096 5669349 4501991250 5714565 4739026770
+RESULT label=mic rep=4 msk=4096 bw_MiBps=5028 avg_cmd_KiB=2621 p50_us=25297 p99_us=26345 sys=9.9
++ for rep in 1 2 3 4 5
++ for msk in 128 512 1024 2048 4096
++ '[' 128 -le 4096 ']'
++ run nvme0n1 128 128k mic 5
++ local dev=nvme0n1 msk=128 bs=128k label=mic rep=5
++ echo 128
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=5714565 4739026770'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=128k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=6639915 4975916370'
++ python3 - mic 5 128 5714565 4739026770 6639915 4975916370
+RESULT label=mic rep=5 msk=128 bw_MiBps=5033 avg_cmd_KiB=128 p50_us=791 p99_us=1073 sys=10.4
++ for msk in 128 512 1024 2048 4096
++ '[' 512 -le 4096 ']'
++ run nvme0n1 512 512k mic 5
++ local dev=nvme0n1 msk=512 bs=512k label=mic rep=5
++ echo 512
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=6639915 4975916370'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=512k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=6871389 5212945746'
++ python3 - mic 5 512 6639915 4975916370 6871389 5212945746
+RESULT label=mic rep=5 msk=512 bw_MiBps=5035 avg_cmd_KiB=512 p50_us=3162 p99_us=3490 sys=7.1
++ for msk in 128 512 1024 2048 4096
++ '[' 1024 -le 4096 ']'
++ run nvme0n1 1024 1024k mic 5
++ local dev=nvme0n1 msk=1024 bs=1024k label=mic rep=5
++ echo 1024
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=6871389 5212945746'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=1024k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=7001579 5449942354'
++ python3 - mic 5 1024 6871389 5212945746 7001579 5449942354
+RESULT label=mic rep=5 msk=1024 bw_MiBps=5033 avg_cmd_KiB=910 p50_us=6259 p99_us=6783 sys=10.6
++ for msk in 128 512 1024 2048 4096
++ '[' 2048 -le 4096 ']'
++ run nvme0n1 2048 2048k mic 5
++ local dev=nvme0n1 msk=2048 bs=2048k label=mic rep=5
++ echo 2048
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=7001579 5449942354'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=2048k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=7079338 5686945106'
++ python3 - mic 5 2048 7001579 5449942354 7079338 5686945106
+RESULT label=mic rep=5 msk=2048 bw_MiBps=5030 avg_cmd_KiB=1524 p50_us=12517 p99_us=13959 sys=11.4
++ for msk in 128 512 1024 2048 4096
++ '[' 4096 -le 4096 ']'
++ run nvme0n1 4096 4096k mic 5
++ local dev=nvme0n1 msk=4096 bs=4096k label=mic rep=5
++ echo 4096
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=7079338 5686945106'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4096k --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=7127237 5923824978'
++ python3 - mic 5 4096 7079338 5686945106 7127237 5923824978
+RESULT label=mic rep=5 msk=4096 bw_MiBps=5025 avg_cmd_KiB=2473 p50_us=25297 p99_us=26345 sys=9.3
++ echo '=== bs-vs-msk disambiguation on Micron: 4MB application reads, sub-MDTS commands ==='
+=== bs-vs-msk disambiguation on Micron: 4MB application reads, sub-MDTS commands ===
++ for rep in 1 2 3
++ '[' 4096 -le 4096 ']'
++ run nvme0n1 2048 4M mic-bs4m-msk2048 1
++ local dev=nvme0n1 msk=2048 bs=4M label=mic-bs4m-msk2048 rep=1
++ echo 2048
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=7127237 5923824978'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4M --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=7196985 6161270098'
++ python3 - mic-bs4m-msk2048 1 2048 7127237 5923824978 7196985 6161270098
+RESULT label=mic-bs4m-msk2048 rep=1 msk=2048 bw_MiBps=5037 avg_cmd_KiB=1702 p50_us=25035 p99_us=26345 sys=8.9
++ '[' 4096 -le 4096 ']'
++ run nvme0n1 4096 4M mic-bs4m-msk4096 1
++ local dev=nvme0n1 msk=4096 bs=4M label=mic-bs4m-msk4096 rep=1
++ echo 4096
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=7196985 6161270098'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4M --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=7248436 6397846866'
++ python3 - mic-bs4m-msk4096 1 4096 7196985 6161270098 7248436 6397846866
+RESULT label=mic-bs4m-msk4096 rep=1 msk=4096 bw_MiBps=5018 avg_cmd_KiB=2299 p50_us=25297 p99_us=26345 sys=8.6
++ for rep in 1 2 3
++ '[' 4096 -le 4096 ']'
++ run nvme0n1 2048 4M mic-bs4m-msk2048 2
++ local dev=nvme0n1 msk=2048 bs=4M label=mic-bs4m-msk2048 rep=2
++ echo 2048
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=7248436 6397846866'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4M --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=7326343 6635291986'
++ python3 - mic-bs4m-msk2048 2 2048 7248436 6397846866 7326343 6635291986
+RESULT label=mic-bs4m-msk2048 rep=2 msk=2048 bw_MiBps=5037 avg_cmd_KiB=1524 p50_us=25035 p99_us=26083 sys=7.7
++ '[' 4096 -le 4096 ']'
++ run nvme0n1 4096 4M mic-bs4m-msk4096 2
++ local dev=nvme0n1 msk=4096 bs=4M label=mic-bs4m-msk4096 rep=2
++ echo 4096
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=7326343 6635291986'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4M --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=7373373 6872343890'
++ python3 - mic-bs4m-msk4096 2 4096 7326343 6635291986 7373373 6872343890
+RESULT label=mic-bs4m-msk4096 rep=2 msk=4096 bw_MiBps=5030 avg_cmd_KiB=2520 p50_us=25297 p99_us=25821 sys=9.9
++ for rep in 1 2 3
++ '[' 4096 -le 4096 ']'
++ run nvme0n1 2048 4M mic-bs4m-msk2048 3
++ local dev=nvme0n1 msk=2048 bs=4M label=mic-bs4m-msk2048 rep=3
++ echo 2048
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=7373373 6872343890'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4M --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=7442215 7109789010'
++ python3 - mic-bs4m-msk2048 3 2048 7373373 6872343890 7442215 7109789010
+RESULT label=mic-bs4m-msk2048 rep=3 msk=2048 bw_MiBps=5037 avg_cmd_KiB=1725 p50_us=25035 p99_us=26083 sys=8.8
++ '[' 4096 -le 4096 ']'
++ run nvme0n1 4096 4M mic-bs4m-msk4096 3
++ local dev=nvme0n1 msk=4096 bs=4M label=mic-bs4m-msk4096 rep=3
++ echo 4096
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'before=7442215 7109789010'
++ fio --name=p --filename=/dev/nvme0n1 --readonly --direct=1 --ioengine=io_uring --rw=read --time_based --runtime=20 --ramp_time=3 --bs=4M --iodepth=8 --numjobs=4 --offset_increment=40g --size=35g --group_reporting --output-format=json --output=/tmp/p.json
+++ dstat nvme0n1
+++ awk -v d=nvme0n1 '$3==d {print $4, $6}' /proc/diskstats
++ local 'after=7491917 7346644306'
++ python3 - mic-bs4m-msk4096 3 4096 7442215 7109789010 7491917 7346644306
+RESULT label=mic-bs4m-msk4096 rep=3 msk=4096 bw_MiBps=5025 avg_cmd_KiB=2383 p50_us=25297 p99_us=25821 sys=9.8
++ echo 1280
++ echo MDTS_PROBE_DONE
+MDTS_PROBE_DONE

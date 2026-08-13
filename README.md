@@ -38,7 +38,7 @@ Companion documents in this repository:
 - [iova-feasibility.md](iova-feasibility.md) — can the IOVA allocator make `max` safe? (prototype, lockup reproduction, per-domain rcache RFC design)
 
 
-## Summary
+## Executive summary
 
 Since the `blk_rq_dma_map` conversion, an NVMe request costs **one** IOVA
 allocation and one mapping regardless of its size — so larger requests mean
@@ -298,18 +298,37 @@ commands as such.
 
 One-megabyte commands are free; the drive's *maximum-size* command pays ~8%
 regardless of queue depth, and splitting the same 2MB transfer into two 1MB
-commands recovers the bandwidth. This reads as a firmware max-transfer slow
-path (bounded per-command internal parallelism at MDTS), and it explains
-the Micron result without invoking vendor quality: the 7450's MDTS is
-≥4MB, so our 2MB commands sat *below* its limit — the unified (untested)
-prediction being that it would show its own penalty at 4MB commands.
+commands recovers the bandwidth.
 
-**Practical consequence — the optimal opt-in value is environment-dependent:**
-on bare metal, `max_sectors_kb=1024` keeps full streaming bandwidth while
-retaining most of the efficiency win (8× fewer commands than 128K; the
-last 2× of interrupt reduction is what the 8% buys); in shadow-vIOMMU
-guests, 2048 remains right because the superpage win (10×, §7.3) dwarfs
-the firmware penalty, and 1MB requests cannot map as superpages at all.
+A dedicated follow-up campaign (fresh provision, stock kernel, `iommu=pt`,
+raw devices, read-only, hugepage-backed buffers giving byte-exact command
+sizes verified from diskstats, n=5 per point, media state controlled by
+explicit preconditioning — including deliberately degrading the OS mirror
+to obtain a raw written Micron) settled the mechanism and falsified the
+tempting generalization:
+
+- **The PM9A3 dip is real, portable, and lives in command handling**: it
+  reproduced on a second physical unit, on blank media (the controller's
+  deallocated-read path, which never touches NAND) and written media, with
+  blended and clean commands, on custom and stock kernels, translated and
+  passthrough IOMMU: −4.6% to −7.0% at its 2MB MDTS across all arms.
+- **The Micron 7450 does the opposite**: with clean commands to its 4MB
+  MDTS, both units *gain monotonically* — +31–35% from 512K to 4MB, blank
+  and written media alike. There is no universal at-MDTS penalty; the
+  original "it would pay at 4MB" prediction was tested and is **wrong**.
+
+The honest generalization: large-command behavior near MDTS is
+firmware-specific *and bidirectional* — the PM9A3 penalizes its maximum
+command a few percent, the 7450-480GB rewards it by a third. (The earlier
+flat Micron result is also explained: the file-over-md method aggregated
+two mirror legs and never isolated one drive's command-size response.)
+
+**Practical consequence — the optimal opt-in value is per-drive *and*
+per-environment:** on bare metal, sweep it — PM9A3-class firmware wants one
+notch below MDTS (`1024`), 7450-class wants its full MDTS (`4096`, worth
++31–35% on that drive); in shadow-vIOMMU guests, 2048 remains right
+regardless because the superpage win (10×, §7.3) dwarfs firmware effects,
+and 1MB requests cannot map as superpages at all.
 
 ### 7.2 KV-shaped workloads (bare metal)
 
