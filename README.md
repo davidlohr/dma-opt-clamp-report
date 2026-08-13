@@ -470,11 +470,14 @@ Summary of what it means for a serving deployment:
   physically contiguous buffers*; the same request from a `malloc` buffer
   gains ~17% instead of 10x (§7.3). Calibration of a real stack (LMCache
   0.5.3) measured **whole-object reads of 7–32MiB** (model-dependent,
-  formula-exact), so the size condition is comfortably met — but whether the
-  staging buffer is 2MB-contiguous depends on the allocator (THP, explicit
-  hugepages, or a pinned pool). That is now the actionable knob for
-  virtualized KV deployments, and it is worth verifying per stack rather
-  than assuming. One operational requirement follows: the offload tier must
+  formula-exact), so the size condition is comfortably met. The contiguity
+  condition is **not** met by default: running the real stack unmodified in
+  the shadow-vIOMMU guest lands at 655 MB/s (+35% over baseline), squarely in
+  the scattered regime, versus 6058 MB/s for explicitly hugepage-backed
+  buffers on the same boot — and `transparent_hugepage=always` does not close
+  the gap (634 MB/s). Virtualized KV deployments must allocate staging
+  buffers as explicit hugepages (`MAP_HUGETLB` or a 2MB-aligned pinned pool)
+  to collect the large win; see [kvio-analysis.md](kvio-analysis.md). One operational requirement follows: the offload tier must
   be accessed with O_DIRECT (LMCache: `use_odirect`) or via hugepage-backed
   buffers for the contiguity condition to hold; the backend's buffered
   default routes through writeback instead.
