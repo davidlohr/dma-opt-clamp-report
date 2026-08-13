@@ -7,37 +7,6 @@ defaults untouched. Measured 2026-08-11/12 on a Latitude.sh `m4-metal-medium`
 v7.2-rc1 baseline. Figures in `dma-opt-clamp-figs/`; patches in `patches/`; raw
 data in `data/`.
 
-## Index
-
-- [Executive summary](#executive-summary)
-- [1. Background: the clamp and why it is obsolete](#1-background-the-clamp-and-why-it-is-obsolete)
-- [2. The series](#2-the-series)
-- [3. Why lifting the ceiling is safe (the rbtree question)](#3-why-lifting-the-ceiling-is-safe-the-rbtree-question)
-- [4. Test rig and methodology](#4-test-rig-and-methodology)
-- [5. The benchmarks in detail](#5-the-benchmarks-in-detail)
-  - [5.1 Block-size sweep](#51-block-size-sweep)
-  - [5.2 KV-cache-shaped workloads, and what they model](#52-kv-cache-shaped-workloads-and-what-they-model)
-  - [5.3 Probes, guest matrix, hardening](#53-probes-guest-matrix-hardening)
-- [6. Results: the default changes nothing](#6-results-the-default-changes-nothing)
-- [7. Results: opt-in vs baseline](#7-results-opt-in-vs-baseline)
-  - [7.1 Bare metal (PM9A3, translated domain)](#71-bare-metal-pm9a3-translated-domain)
-  - [7.2 KV-shaped workloads (bare metal)](#72-kv-shaped-workloads-bare-metal)
-  - [7.3 Virtualized (the headline win)](#73-virtualized-the-headline-win)
-  - [7.4 Independent check: the kvio suite (405B objects)](#74-independent-check-the-kvio-suite-405b-objects)
-  - [7.5 Hardening](#75-hardening)
-  - [7.6 Second drive model (Micron 7450, via file over md-raid1)](#76-second-drive-model-micron-7450-via-file-over-md-raid1)
-  - [7.7 Root-cause feasibility: retiring the clamp entirely](#77-root-cause-feasibility-retiring-the-clamp-entirely)
-- [8. Overall conclusions](#8-overall-conclusions)
-- [9. Impact for AI/ML KV-cache workloads](#9-impact-for-aiml-kv-cache-workloads)
-- [10. Reproduction notes](#10-reproduction-notes)
-
-Companion documents in this repository:
-
-- [kvio-analysis.md](kvio-analysis.md) — independent check with the kvio suite (405B objects, segment-budget findings, virtualized real-stack regime)
-- [kvio-hang-report.md](kvio-hang-report.md) — root-caused upstream bug report for the kvio uring_cmd store hang
-- [iova-feasibility.md](iova-feasibility.md) — can the IOVA allocator make `max` safe? (prototype, lockup reproduction, per-domain rcache RFC design)
-
-
 ## Executive summary
 
 Since the `blk_rq_dma_map` conversion, an NVMe request costs **one** IOVA
