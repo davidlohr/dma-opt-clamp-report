@@ -427,6 +427,21 @@ requests), and this is the campaign's first measured bare-metal CPU win:
 through a stacked fs+md+nvme path, 16x fewer requests cut streaming sys time
 3.6x at identical bandwidth.
 
+### 7.7 Root-cause feasibility: retiring the clamp entirely
+
+A separate investigation ([iova-feasibility.md](iova-feasibility.md)) attacks
+the clamp's root: the IOVA allocator's globally-locked rbtree for >128KB
+allocations. A one-line prototype (rcache classes extended to cover 2MB)
+makes `dma_opt_mapping_size()` equal `dma_max_mapping_size()`, lifting the
+NVMe limit to MDTS *by default* with no driver change — and a scaled
+reproduction of the original 448-core lockup mechanism (every alloc and
+FQ-drained free through the rbtree) shows the extension cutting contentions
+91× and worst waits 20× under an adversarial 2MB storm, with the free-side
+trigger of the historical watchdog traces eliminated by construction. The
+mergeable form is per-domain and lazily allocated; details, costs, risks
+(VMD/SAS shared domains, 32-bit starvation, memory climate) and upstream
+history in the document.
+
 ## 8. Overall conclusions
 
 1. **The mechanism is verified end to end.** With the series opted in, requests
