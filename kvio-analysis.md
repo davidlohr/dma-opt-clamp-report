@@ -6,11 +6,6 @@ geometry alone, no GPU — and executes it against a real device through
 LMCache's `raw_block` engine (POSIX, io_uring, or `io_uring_cmd` passthrough),
 with an eBPF monitor to validate projection against wire commands.
 
-That makes it a useful adversary for [this study](README.md): a second tool,
-written by other people for a different purpose, exercising the same kernel
-limit with the largest KV objects in circulation. This document reports what
-it found — including two findings the fio-based campaign had not surfaced, and
-two limits of the suite itself.
 
 ## Setup
 
