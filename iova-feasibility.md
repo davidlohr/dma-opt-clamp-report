@@ -179,34 +179,85 @@ not attenuated; its mechanism is removed.
 
 ## 5. Upstream history: why the cache was never extended
 
-Reconstructed from lore (full citations in the threads):
+Reconstructed from lore:
 
 - **John Garry tried, 2021–2022**, five versions: first
-  `dma_set_max_opt_size()` (+117% IOPS on hisi_sas), then Robin Murphy's
-  preferred shape — a per-group sysfs `max_opt_dma_size` that actually
-  resizes the rcaches. Will Deacon **Acked** the core patches in July
-  2022. It was never NAKed: it died of reconfiguration UX (resizing
-  required unbind + default-domain reallocation) and because the
-  driver-side clamp (`dma_opt_mapping_size()`, merged v6.0 for SCSI, then
-  3710e2b for NVMe) captured the benchmark win with no IOMMU surgery.
-- **Robin's recorded requirements** for any extension: pay-for-what-you-use
-  (no eager caches for domains that never allocate large), no decoupling
-  of the pow-2 roundup from the caching bound (his example: caching a
-  ~35MB video frame costs a 64MB roundup), and end-user-reachable knobs.
-  His own 2023 flexible-depot rework removed the depot half of the memory
-  objection.
+  [`dma_set_max_opt_size()`](https://lore.kernel.org/all/1616160348-29451-1-git-send-email-john.garry@huawei.com/)
+  (v1, Mar 2021; +117% IOPS on hisi_sas), later pivoting to Robin Murphy's
+  preferred shape — a per-group sysfs
+  [`max_opt_dma_size`](https://lore.kernel.org/all/1649071634-188535-1-git-send-email-john.garry@huawei.com/)
+  (v5, Apr 2022) that actually resizes the rcaches. Will Deacon reviewed
+  [v4](https://lore.kernel.org/all/20210802150153.GC28735@willie-the-truck/)
+  with only mechanical nits and
+  [**Acked** the core v5 patches](https://lore.kernel.org/all/20220706121057.GF2403@willie-the-truck/)
+  in July 2022. It was never NAKed: it died of reconfiguration UX
+  (resizing required unbind + default-domain reallocation) and because the
+  driver-side clamp captured the benchmark win with no IOMMU surgery —
+  [`dma_opt_mapping_size()` for SCSI](https://lore.kernel.org/all/1657797329-98541-1-git-send-email-john.garry@huawei.com/)
+  ([applied by hch](https://lore.kernel.org/all/20220719040635.GA26132@lst.de/),
+  v6.0; with [Damien Le Moal insisting](https://lore.kernel.org/all/62b801e8-66b6-0af7-b0c9-195823bf9f62@opensource.wdc.com/)
+  it cap the user-raisable soft limit, not `max_hw_sectors`), then
+  3710e2b056cb for NVMe — which capped the hard limit.
+- **Robin's recorded requirements** for any extension:
+  [pay-for-what-you-use](https://lore.kernel.org/all/26fb1b79-2e46-09f6-1814-48fec4205f32@arm.com/)
+  ("big high-throughput systems with plenty of memory can spend it on
+  better performance, while small systems ... don't have to pay the (not
+  insignificant) cost for caches they don't need"),
+  [no decoupling of the pow-2 roundup from the caching bound](https://lore.kernel.org/all/e2d873d9-3529-caff-d4ae-cca456857ff1@arm.com/)
+  (his example: a ~35MB video frame rounding to 64MB "would be hard to
+  justify"), and end-user-reachable knobs over Kconfig. His own
+  [flexible-depot rework](https://lore.kernel.org/all/cover.1692033783.git.robin.murphy@arm.com/)
+  (v6.7, triggered by
+  [Zhang Zekun's 256-CPU report](https://lore.kernel.org/all/20230811130246.42719-1-zhangzekun11@huawei.com/))
+  removed the depot half of the memory objection — though
+  [John re-raised the scaling math in-thread](https://lore.kernel.org/all/1aa1ecad-bdf0-84c8-a37f-94e1d0fb8a03@oracle.com/)
+  (~17× more cacheable IOVAs than a 4096-deep controller needs), and Robin
+  left the door open:
+  ["we can absolutely come back and go to town on enhancements later"](https://lore.kernel.org/all/b9bda816-612c-b646-63e7-54cb3fedf1f4@arm.com/).
+- **The original contention evidence** is per-request, shared-domain SAS:
+  [Zhen Lei's revert request](https://lore.kernel.org/all/20210129092120.1482-1-thunder.leizhen@huawei.com/)
+  (128-CPU Kunpeng, one hisi_sas HBA, 12 SSDs: 1655K→893K IOPS) and the
+  [2019 rcache-ageing analysis](https://lore.kernel.org/all/20190815121104.29140-3-thunder.leizhen@huawei.com/).
+- **The two-step DMA series never revisited the clamp**:
+  [the v1 cover](https://lore.kernel.org/all/cover.1730037276.git.leon@kernel.org/)
+  frames the IOVA angle as pre-computation; no thread discusses allocator
+  lock pressure for block I/O (Robin's
+  [initial NAK](https://lore.kernel.org/all/1166a5f5-23cc-4cce-ba40-5e10ad2606de@arm.com/)
+  was about API genericity). Meanwhile
+  [Luis Chamberlain's 8MB-single-I/O work](https://lore.kernel.org/all/20250320111328.2841690-1-mcgrof@kernel.org/)
+  builds large-I/O support on that API without mentioning that translated
+  systems still clamp at 128KB — **the collision this document addresses
+  is latent and undiscussed upstream**.
 - **The memory climate is currently hostile to eager caches**: an April
-  2026 report of **25TiB of fleet-wide `iommu_iova` slab** (Ampere-class
-  arm64) has sharpened scrutiny. Any proposal that eagerly allocates
-  per-CPU magazines for four extra classes on every domain will re-collect
-  the 2021 objection verbatim. Note arm64/64K pages already runs the
-  rcache at 2MB (`PAGE_SIZE << 5`), so the *size* is not novel — the
-  allocation pattern is the issue.
-- **Positions**: Linus has said the queue handling "should do this
-  automatically" (i.e. block-layer-generic, not per-driver reverts); Rik
-  van Riel reported fleet soft-lockups he could not reproduce on demand —
-  a reminder that credible translate-mode evidence at scale is scarce, and
-  that the free-side convoy is the part reviewers will ask about.
+  2026 report from Alireza Haghdoost of **25TiB of fleet-wide `iommu_iova`
+  slab** across 93 AmpereOne hosts (160-core arm64, 64K pages, DMA-FQ) has
+  sharpened scrutiny. Any proposal that eagerly allocates per-CPU
+  magazines for four extra classes on every domain will re-collect the
+  2021 objection verbatim. Note arm64/64K pages already runs the rcache at
+  2MB (`PAGE_SIZE << 5`), so the *size* is not novel — the allocation
+  pattern is the issue.
+- **The allocator is in play right now**: Rik van Riel (Meta) hit
+  production soft-lockups in `alloc_iova()`'s linear search on AMD Bergamo
+  and is iterating
+  ["iova: convert from rbtree to maple tree"](https://lore.kernel.org/all/20260624030853.2340880-1-riel@surriel.com/)
+  (v4, June 2026, unmerged;
+  [v3](https://lore.kernel.org/all/20260603033653.4144138-1-riel@surriel.com/)).
+  Robin
+  [suggested the maple tree himself](https://lore.kernel.org/all/59e0476c-a2bf-42f3-8244-d8a4828da64a@arm.com/)
+  ("improving the allocator has been on my to-do list for a very long
+  time"), wants the `max32_alloc_size` bodge gone and 33–56-bit masks
+  handled, and is "wary of growing struct iova" — but note the maple
+  conversion fixes the O(n) *search*, not the single-lock serialization
+  this document targets; the two are complementary.
+- **Positions**:
+  [Linus, Apr 2023](https://lore.kernel.org/all/CAHk-=whogEk1UJfU3E7aW18PDYRbdAzXta5J0ECg=CB5=sCe7g@mail.gmail.com/):
+  "if this is actually an issue, to the point that it's now being
+  discussed for a _second_ block driver subsystem, then shouldn't the
+  queue handling just do this all automatically, instead of adding random
+  crap to random block driver architectures?" — the clamp's *placement*
+  was already contested when it landed. Robin's SAC-trick fix
+  (791c2b17fb40, v6.6) has since removed the worst single rbtree
+  pathology, the perpetual 32-bit retry walk.
 
 ## 6. What a mergeable fix looks like
 
