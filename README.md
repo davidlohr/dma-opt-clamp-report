@@ -350,12 +350,13 @@ KV-offload NVMe I/O from model geometry and issues it through LMCache's
 `raw_block` engine. Run against the largest KV object in circulation
 (Llama-3.1-405B: 126 MiB per 256-token block), it reproduces the study's
 conclusion from a different tool and I/O engine — restores gain **13.5-19.6%**
-in every configuration tested, stores stay flat — and surfaces a mechanism the
-fio campaign missed: nvme-pci *derives* `max_segments` from `max_hw_sectors`
-(`nvme_max_drv_segments()`), so the clamp also caps the segment count at
-**33** (vs 256 opted in). Scattered-buffer requests are therefore bounded near
-132KB independently of the sector limit — the other half of the contiguity
-story behind the superpage cliff. Full write-up: [kvio-analysis.md](kvio-analysis.md).
+in every configuration tested, stores stay flat — and refines the contiguity
+story: nvme-pci derives `max_segments` from `max_hw_sectors`, but
+`NVME_MAX_SEGS` caps it at 256, so even opted in a **4K-scattered buffer tops
+out at 1MB per command**, not the 2MB the sector limit allows. Contiguous
+buffers are required to reach the full ceiling — the superpage cliff seen from
+the driver side — and the analysis proposes a contained fix for PRP-only
+controllers. Full write-up: [kvio-analysis.md](kvio-analysis.md).
 
 ### 7.5 Hardening
 

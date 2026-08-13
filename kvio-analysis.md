@@ -24,17 +24,17 @@ two limits of the suite itself.
 - Workload: 2 chunks x 2 iterations + warmup, block device, io_uring,
   O_DIRECT; engine command size (`--mdts-bytes`) swept 128K → 2M; 2 reps.
 
-## Finding 1: the clamp also caps `max_segments` — by a factor of 8
+## Finding 1: the segment budget, not the sector limit, caps scattered I/O at 1MB
 
-The per-boot gates showed something the fio campaign never measured:
+The per-boot gates showed a difference the fio campaign never measured:
 
-| kernel | `max_hw_sectors_kb` | `max_sectors_kb` | **`max_segments`** |
-|---|---|---|---|
-| kvbase | 128 | 128 | **33** |
-| kvopt | 2048 | 2048 | **256** |
+| kernel | `max_hw_sectors_kb` | `max_sectors_kb` | `max_segments` | binding limit for 4K-scattered I/O |
+|---|---|---|---|---|
+| kvbase | 128 | 128 | 33 | **128 KB** (sectors) |
+| kvopt | 2048 | 2048 | 256 | **1 MB** (segments) |
 
-This is not a coincidence of configuration — nvme-pci *derives* the segment
-limit from the transfer limit (`drivers/nvme/host/core.c`):
+nvme-pci *derives* the segment limit from the transfer limit
+(`drivers/nvme/host/core.c`):
 
 ```c
 static u32 nvme_max_drv_segments(struct nvme_ctrl *ctrl)
@@ -45,16 +45,27 @@ lim->max_segments = min_t(u32, USHRT_MAX,
 	min_not_zero(nvme_max_drv_segments(ctrl), ctrl->max_segments));
 ```
 
-128KB/4KB + 1 = **33**; 2MB/4KB + 1 = 513, capped by `NVME_MAX_SEGS` to
-**256**. So the DMA-optimal clamp has a second-order effect nobody discusses:
-it limits how many discontiguous pages a single command may gather. On the
-clamped kernel a request built from ordinary scattered 4K pages tops out at
-33 segments — about 132KB — *regardless* of what `max_sectors_kb` would
-otherwise allow. Raising the ceiling raises both limits together.
+On the clamped kernel this is not an extra restriction: 128KB/4KB + 1 = 33 is
+exactly the segment count a 128KB page-granular transfer can need, so the
+sector limit binds and the segment limit is slack. (It binds only for
+sub-page-fragment scatter lists — 33 segments of 512B is 16KB — which is rare
+in practice.)
 
-This also explains a fio-side result: the study's superpage cliff needed
-hugepage-backed buffers, and this is the other half of the same coin —
-scattered buffers are segment-bound long before they are sector-bound.
+The interesting case is the **opted-in** kernel. There the PRP-derived bound
+would be 513, but `ctrl->max_segments` is `NVME_MAX_SEGS` = 256
+(`NVME_CTRL_PAGE_SIZE / sizeof(struct nvme_sgl_desc)` = one SGL descriptor
+page), so 256 wins. With ordinary 4K-scattered buffers that caps a command at
+**1 MB — half of what the lifted sector limit allows**. Raising
+`max_sectors_kb` to 2048 therefore does *not* by itself produce 2MB commands
+unless the buffer is physically contiguous, which is precisely the contiguity
+requirement the fio study found from the other direction (the superpage cliff)
+and which Finding 3 shows as an outright `EINVAL` on the passthrough path.
+
+Worth noting what the limit is really made of: `NVME_MAX_SEGS` bounds *SGL*
+descriptors, and the driver's own comment says "for PRPs, segments don't
+matter at all" — PRP lists chain (`NVME_MAX_NR_DESCRIPTORS` = 5 x
+`PRPS_PER_PAGE` = 511, ~10MB worth). The 256 cap is applied to every request
+regardless of which format it will use. See "What can be done" below.
 
 ## Finding 2: the block-path A/B — restores gain 13-20%, stores are flat
 
@@ -122,10 +133,10 @@ test.
 1. **Independent confirmation** that the clamp costs real bandwidth on
    KV-restore-shaped I/O at production object sizes — from a different tool,
    a different I/O engine, and the largest model geometry in circulation.
-2. **A new mechanism**: the clamp silently caps `max_segments` at 33, which
-   bounds scattered-buffer requests to ~132KB independently of the sector
-   limit. This deserves a sentence in the series' changelog: lifting
-   `max_hw_sectors` restores both the transfer *and* the gather capability.
+2. **A refinement of the opt-in's reach**: even opted in, 4K-scattered
+   buffers cap at 1MB per command (256 segments), not the 2MB the sector
+   limit allows. Contiguous buffers are required to use the full ceiling —
+   the same conclusion the superpage cliff reached from the other side.
 3. **Corroboration of the contiguity requirement** from the opposite
    direction: fio showed the superpage cliff needs hugepages; kvio shows a
    scattered 2MB command is rejected outright by the segment budget.
@@ -148,3 +159,37 @@ Deps beyond the documented list (LMCache 0.5.x pulls them in transitively):
 `msgspec sortedcontainers requests prometheus_client py-cpuinfo psutil
 aiohttp numba aiofile pyzmq transformers`. Raw logs for both kernels:
 `data/kvio-final.tgz`.
+
+## What can be done about the 256-segment cap
+
+The cap is `NVME_MAX_SEGS` — one SGL descriptor page's worth of entries —
+applied unconditionally, even though the driver notes that PRP-format
+requests have no such limit (PRP lists chain across
+`NVME_MAX_NR_DESCRIPTORS` pages, ~10MB of coverage). Three options, in
+increasing order of ambition:
+
+1. **PRP-only controllers could use the PRP bound.**
+   `nvme_pci_get_virt_boundary()` already returns `NVME_CTRL_PAGE_SIZE - 1`
+   when the controller lacks SGL support, so the block layer guarantees every
+   request is page-gap-free and therefore PRP-expressible. For those
+   controllers `NVME_MAX_SEGS` is irrelevant and `max_segments` could be
+   `nvme_max_drv_segments()` (513 at a 2MB ceiling), letting scattered
+   buffers reach the full transfer size. Contained change, no new failure
+   modes: such devices never build an SGL.
+2. **SGL-capable controllers could fall back to PRP above 256 segments.**
+   `nvme_pci_use_sgls()` already chooses per request; adding "and the request
+   fits an SGL descriptor page" would let `max_segments` rise for everyone.
+   The catch is requests that *require* SGL (page gaps within the
+   controller's mask, which PRP cannot express); those must still be split at
+   256, and `queue_limits` has only one number, so this needs either a
+   conservative limit for gap-capable queues or a split hint the block layer
+   does not have today.
+3. **Chain SGL segments.** SGL supports segment descriptors that chain like
+   PRP lists; the driver deliberately supports "a single descriptor's worth".
+   Lifting that is the most general fix and the most invasive.
+
+Option 1 is the natural follow-on to this series: it removes the contiguity
+requirement for the substantial population of PRP-only devices, at which
+point the opt-in's ceiling is reachable with ordinary buffers. Options 2 and
+3 are worth raising with the nvme maintainers rather than attempting blind —
+the SGL-required cases are the crux.
