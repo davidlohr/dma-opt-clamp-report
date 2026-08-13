@@ -179,8 +179,6 @@ not attenuated; its mechanism is removed.
 
 ## 5. Upstream history: why the cache was never extended
 
-Reconstructed from lore:
-
 - **John Garry tried, 2021–2022**, five versions: first
   [`dma_set_max_opt_size()`](https://lore.kernel.org/all/1616160348-29451-1-git-send-email-john.garry@huawei.com/)
   (v1, Mar 2021; +117% IOPS on hisi_sas), later pivoting to Robin Murphy's
@@ -325,12 +323,3 @@ opt-in knob simply becomes a no-op. The remaining honest caveat is not the
 allocator at all: it is per-drive QoS (§7.2 of the study — some firmware
 serves 4K readers dramatically worse next to 2MB streams), which is a
 reason for per-device *policy*, never for a global 128KB ceiling.
-
-## Appendix: artifacts
-
-- Prototype storm data: `/root/lockstat-{A,B,C}.txt`, `fio-{A,B,C}.json`
-  (box), summarized in §3.
-- Reproduction A/B: `data/iova-repro.tgz` (lock_stat, fio json, bpftrace
-  histograms for both kernels).
-- Kernels: `7.2.0-rc1-kvls` (series + LOCK_STAT, stock allocator),
-  `7.2.0-rc1-kvrc` (same + `IOVA_RANGE_CACHE_MAX_SIZE 6→10`).
