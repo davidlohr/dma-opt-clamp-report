@@ -253,6 +253,33 @@ commands vs 6.6–6.7GB/s on 128KB streams. Re-capping via sysfs restores
 baseline exactly; added depth does not recover the loss — it is drive-internal,
 and **drive-specific** (§7.6: it does not reproduce on the Micron 7450).
 
+A post-campaign decomposition of every archived datapoint localises the
+regression precisely: it attaches to **MDTS-sized commands**, not to large
+commands as such.
+
+| device command size | bandwidth (median, n=3) | vs 128K |
+|---|---|---|
+| 128K (baseline / probe128 isolation) | 6603–6687 MiB/s | — |
+| **1MB** (rand1m, both kernels) | 6554 vs 6608 | **−0.8% (noise)** |
+| **2MB = the drive's MDTS** | 6064–6122 | **−8.2%** |
+| 2MB at QD16/QD64 (probeqd) | 6109 | −8% — QD does not recover it |
+| 2×1MB split of a 2MB request (PRP A/B) | 6535 | −1% |
+
+One-megabyte commands are free; the drive's *maximum-size* command pays ~8%
+regardless of queue depth, and splitting the same 2MB transfer into two 1MB
+commands recovers the bandwidth. This reads as a firmware max-transfer slow
+path (bounded per-command internal parallelism at MDTS), and it explains
+the Micron result without invoking vendor quality: the 7450's MDTS is
+≥4MB, so our 2MB commands sat *below* its limit — the unified (untested)
+prediction being that it would show its own penalty at 4MB commands.
+
+**Practical consequence — the optimal opt-in value is environment-dependent:**
+on bare metal, `max_sectors_kb=1024` keeps full streaming bandwidth while
+retaining most of the efficiency win (8× fewer commands than 128K; the
+last 2× of interrupt reduction is what the 8% buys); in shadow-vIOMMU
+guests, 2048 remains right because the superpage win (10×, §7.3) dwarfs
+the firmware penalty, and 1MB requests cannot map as superpages at all.
+
 ### 7.2 KV-shaped workloads (bare metal)
 
 ![QoS p99](dma-opt-clamp-figs/fig3-qos-p99.svg)
@@ -456,6 +483,9 @@ history in the document.
    a 489ms→5.7ms extent-p99 collapse and 9x lower J/GiB** on real hardware
    under a shadow vIOMMU — transformative, with the full win gated on
    superpage-sized requests. Bare metal:
+   note the per-drive sweet spot — the −8% attaches to MDTS-sized commands
+   specifically (1MB commands are free on the PM9A3, §7.1), so bare-metal
+   opt-in should generally target one notch below MDTS.
    tail-latency and CPU-efficiency wins (−32% extent p99; −72% stacked-path
    sys), while raw streaming bandwidth is drive-dependent (−8% on PM9A3, flat
    on Micron 7450). A default flip would gamble those tradeoffs fleet-wide; a
@@ -501,8 +531,10 @@ Summary of what it means for a serving deployment:
   latency for **−32% extent p99** — and TTFT SLOs are tail-driven. On drives
   that don't pay the streaming penalty (Micron 7450 class), the tail win comes
   with flat bandwidth plus large CPU savings; on PM9A3-class drives the −8%
-  applies only if restores are bandwidth-bound rather than tail-bound. Measure
-  per drive model; the knob is per-device.
+  applies only if restores are bandwidth-bound rather than tail-bound — and
+  is avoidable entirely: it attaches to MDTS-sized commands, so opting in to
+  1MB instead of 2MB keeps full bandwidth with most of the efficiency win
+  (§7.1). Measure per drive model; the knob is per-device and per-value.
 - **Storage layout rule: opt in the KV tier, never a shared tier.** A device
   carrying opted-in restore traffic penalizes co-located small I/O severely
   (4K p99 4.6→11.1ms). Kept on its own device — the natural layout for an
