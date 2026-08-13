@@ -90,7 +90,53 @@ collapses to ≤128KB / 33 segments no matter what the application requests; on
 (segment-bound at 256 x 4KB). **Application-level tuning cannot escape the
 kernel limit — only the kernel knob can.**
 
-## Finding 3: 2MB passthrough fails even with the ceiling lifted
+## Finding 3: under virtualization the real stack lands in the *scattered* regime — and THP is not enough
+
+The fio side of this study established that in a shadow-vIOMMU guest the
+opt-in is worth ~10x for 2MB requests **from physically contiguous buffers**,
+and only ~17% from `malloc` buffers ([study §7.3](README.md)). kvio answers
+what that leaves open: which regime does a real KV stack's own allocator land
+in?
+
+Running kvio *inside* the shadow-vIOMMU guest (same passed-through PM9A3,
+both kernels, LMCache's real `raw_block` engine and its real buffers):
+
+| | baseline | opt-in | Δ |
+|---|---|---|---|
+| load (restore) | 485 MB/s | **655 MB/s** | +35% |
+| store | 491 MB/s | 633 MB/s | +29% |
+
+Flat across 2MB and 128KB engine command sizes, as everywhere else — the
+kernel limit decides, not the application's request size. The absolute value
+is the answer: **655, not ~6100.** Calibrated against fio on the identical rig
+(hugepage 2MB = 6105, `malloc` 2MB = 607), LMCache's buffers are firmly in the
+page-scattered regime. A real KV serving stack does **not** collect the 10x
+virtualized win automatically; it collects a respectable +35%.
+
+**Transparent huge pages do not close the gap.** The guest ran with
+`transparent_hugepage=always` throughout, and a same-boot control makes the
+point cleanly:
+
+| configuration | restore |
+|---|---|
+| kvio, THP=always | 634 MB/s |
+| kvio, THP=madvise (no THP) | 475 MB/s |
+| **fio, explicit hugepage buffers (same boot)** | **6058 MiB/s** |
+
+THP is worth ~33% (475 → 634) — some physical contiguity does accrue — but it
+does not reach the superpage regime an order of magnitude above. The likely
+reason is alignment rather than contiguity: an IOMMU superpage needs a
+2MB-aligned physical extent mapped at a 2MB-aligned IOVA, and a THP-backed
+allocation from a general-purpose allocator reliably provides neither.
+(Measured fact: THP=always does not reach the cliff. Mechanism: inferred, not
+instrumented.)
+
+Practical consequence for KV-offload on virtualized hosts: staging buffers
+must be **explicitly** hugepage-backed — `MAP_HUGETLB`, a preallocated
+2MB-aligned pinned pool, or equivalent — to collect the large win. Enabling
+THP and hoping is not enough, and the gap between the two paths is 10x.
+
+## Finding 4: 2MB passthrough fails even with the ceiling lifted
 
 With `--engine uring_cmd --mdts-bytes 2097152` on `kvopt` (max_hw = 2MB):
 
@@ -106,7 +152,7 @@ passthrough behavior by default, but the segment budget still caps a scattered
 2MB command. Reaching 2MB commands needs physically contiguous (hugepage)
 buffers, exactly as on the fio side.
 
-## Finding 4 (suite limitation): the passthrough engine wedges at ~1000 commands
+## Finding 5 (suite limitation): the passthrough engine wedges at ~1000 commands
 
 `--engine uring_cmd` with the default 128KB command size hangs indefinitely on
 a 126 MiB object (1008 commands): the process blocks with **zero device
@@ -135,7 +181,12 @@ test.
 3. **Corroboration of the contiguity requirement** from the opposite
    direction: fio showed the superpage cliff needs hugepages; kvio shows a
    scattered 2MB command is rejected outright by the segment budget.
-4. A reminder that **application-level request sizing cannot compensate**:
+4. **The decisive deployment datapoint**: a real KV stack, run unmodified in
+   a shadow-vIOMMU guest, lands in the scattered regime (+35%), not the
+   superpage regime (10x) — and THP=always does not change that. Collecting
+   the large virtualized win requires explicitly hugepage-backed staging
+   buffers.
+5. A reminder that **application-level request sizing cannot compensate**:
    sweeping the engine's command size changed almost nothing within a kernel,
    while changing the kernel moved every point.
 
