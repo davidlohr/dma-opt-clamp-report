@@ -1,0 +1,78 @@
+rebound 0000:03:00.0 to: nvme
+target: /dev/nvme2n1 char=/dev/ng2n1
+crw------- 1 root root 240, 2 Aug 13 00:21 /dev/ng2n1
+kernel: 7.2.0-rc1-kvbase
+GATE max_hw_sectors_kb=128 max_sectors_kb=128
+MDTS: mdts      : 9
+=== t=20s ===
+    PID STAT WCHAN                    %CPU     ELAPSED COMMAND
+   8279 Sl   futex_do_wait            28.3       00:20 python3
+block-inflight(read write):        0        0
+loadavg: 0.93 0.51 0.30
+-- pid 8279 threads:
+    TID STAT WCHAN                    COMMAND
+   8279 Sl   futex_do_wait            python3
+   8281 Sl   futex_do_wait            python3
+   8282 Sl   futex_do_wait            python3
+   8283 Sl   futex_do_wait            python3
+   8284 Sl   futex_do_wait            python3
+   8285 Sl   futex_do_wait            python3
+   8286 Sl   futex_do_wait            python3
+-- kernel stacks (task state):
+[<0>] futex_do_wait+0x3a/0x80
+[<0>] __futex_wait+0x99/0x110
+[<0>] futex_wait+0x7b/0x140
+[<0>] do_futex+0xf1/0x2d0
+[<0>] __x64_sys_futex+0x129/0x200
+[<0>] x64_sys_call+0x2158/0x26e0
+=== t=60s ===
+    PID STAT WCHAN                    %CPU     ELAPSED COMMAND
+   8279 Sl   futex_do_wait            17.2       01:00 python3
+block-inflight(read write):        0        0
+loadavg: 0.52 0.46 0.29
+-- pid 8279 threads:
+    TID STAT WCHAN                    COMMAND
+   8279 Sl   -                        python3
+   8281 Sl   futex_do_wait            python3
+   8282 Sl   futex_do_wait            python3
+   8283 Sl   futex_do_wait            python3
+   8284 Sl   futex_do_wait            python3
+   8285 Sl   futex_do_wait            python3
+   8286 Sl   futex_do_wait            python3
+-- kernel stacks (task state):
+[<0>] futex_do_wait+0x3a/0x80
+[<0>] __futex_wait+0x99/0x110
+[<0>] futex_wait+0x7b/0x140
+[<0>] do_futex+0xf1/0x2d0
+[<0>] __x64_sys_futex+0x129/0x200
+[<0>] x64_sys_call+0x2158/0x26e0
+=== t=120s ===
+    PID STAT WCHAN                    %CPU     ELAPSED COMMAND
+   8279 Rl   futex_do_wait            11.1       02:00 python3
+block-inflight(read write):        0        0
+loadavg: 0.19 0.37 0.27
+-- pid 8279 threads:
+    TID STAT WCHAN                    COMMAND
+   8279 Sl   futex_do_wait            python3
+   8281 Sl   futex_do_wait            python3
+   8282 Sl   futex_do_wait            python3
+   8283 Sl   futex_do_wait            python3
+   8284 Sl   futex_do_wait            python3
+   8285 Sl   futex_do_wait            python3
+   8286 Sl   futex_do_wait            python3
+-- kernel stacks (task state):
+[<0>] futex_do_wait+0x3a/0x80
+[<0>] __futex_wait+0x99/0x110
+[<0>] futex_wait+0x7b/0x140
+[<0>] do_futex+0xf1/0x2d0
+[<0>] __x64_sys_futex+0x129/0x200
+[<0>] x64_sys_call+0x2158/0x26e0
+=== dmesg tail ===
+[ 1077.100688] vfio-pci 0000:03:00.0: reset done
+[ 1943.313413] nvme nvme2: pci function 0000:03:00.0
+[ 1943.315453] nvme nvme2: D3 entry latency set to 8 seconds
+[ 1943.317884] nvme nvme2: passthrough uses implicit buffer lengths
+[ 1943.322943] nvme nvme2: 32/0/0 default/read/poll queues
+=== runner output ===
+[32;20m[2026-08-13 00:21:57,986] LMCache INFO:[0m RawBlockCore: skipping on-device metadata checkpoint load [3m(core.py:330:lmcache.v1.storage_backend.raw_block.core)[0m
+HANGPROBE_DONE
