@@ -490,6 +490,19 @@ mergeable form is per-domain and lazily allocated; details, costs, risks
 (VMD/SAS shared domains, 32-bit starvation, memory climate) and upstream
 history in the document.
 
+### 7.8 The RFC benchmarked: opt-in performance at stock defaults
+
+The per-domain rcache RFC (the mergeable form of the
+[feasibility study's](iova-feasibility.md) verdict) was benchmarked
+three-way against baseline and the opt-in series across every surface of
+this study — bare metal, three KVM topologies, kvio, lock contention, and
+package energy. Result: equivalent performance to the opt-in on every
+surface (shadow-vIOMMU guest: 311 → 6070 MiB/s at **stock defaults**), with
+the allocator pathology that motivated the clamp eliminated rather than
+tolerated (180× fewer contended acquisitions than the opted-in stock
+allocator at identical command counts). Full write-up:
+[rfc-benchmarks.md](rfc-benchmarks.md).
+
 ## 8. Overall conclusions
 
 1. **The mechanism is verified end to end.** With the series opted in, requests

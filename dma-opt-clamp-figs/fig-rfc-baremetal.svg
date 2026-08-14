@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="348" viewBox="0 0 760 348" font-family="system-ui, -apple-system, sans-serif">
+<rect width="760" height="348" fill="#fcfcfb" stroke="#e0dedb"/>
+<text x="20" y="28" font-size="14" font-weight="600" fill="#0b0b0b">Bare metal, PM9A3 (medians n=3)</text>
+<defs><pattern id="tex" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill-opacity="0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fcfcfb" stroke-width="2.5"/></pattern></defs>
+<rect x="190" y="40" width="10" height="10" rx="2" fill="#2a78d6"/>
+<text x="205" y="49" font-size="11" fill="#52514e">kbase</text>
+<rect x="263.0" y="40" width="10" height="10" rx="2" fill="#eb6834"/>
+<text x="278.0" y="49" font-size="11" fill="#52514e">kopt</text>
+<rect x="328.8" y="40" width="10" height="10" rx="2" fill="#1baf7a"/>
+<text x="343.8" y="49" font-size="11" fill="#52514e">krfc</text>
+<line x1="190.0" y1="56" x2="190.0" y2="318" stroke="#eceae6"/>
+<text x="190.0" y="334" font-size="10" fill="#52514e" text-anchor="middle">0</text>
+<line x1="323.3" y1="56" x2="323.3" y2="318" stroke="#eceae6"/>
+<text x="323.3" y="334" font-size="10" fill="#52514e" text-anchor="middle">2,000</text>
+<line x1="456.7" y1="56" x2="456.7" y2="318" stroke="#eceae6"/>
+<text x="456.7" y="334" font-size="10" fill="#52514e" text-anchor="middle">4,000</text>
+<line x1="590.0" y1="56" x2="590.0" y2="318" stroke="#eceae6"/>
+<text x="590.0" y="334" font-size="10" fill="#52514e" text-anchor="middle">6,000</text>
+<text x="430" y="346" font-size="10" fill="#52514e" text-anchor="middle">MiB/s (4K scaled x10)</text>
+<text x="182" y="90.5" font-size="11" fill="#0b0b0b" text-anchor="end">seq 2MB QD8</text>
+<path d="M190.0,62.0 h436.7 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-436.7 z" fill="#2a78d6"/>
+<text x="636.7" y="73.5" font-size="10.5" fill="#52514e">6,610</text>
+<path d="M190.0,79.0 h404.9 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-404.9 z" fill="#eb6834"/>
+<text x="604.9" y="90.5" font-size="10.5" fill="#52514e">6,133</text>
+<path d="M190.0,96.0 h399.7 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-399.7 z" fill="#1baf7a"/>
+<text x="599.7" y="107.5" font-size="10.5" fill="#52514e">6,056</text>
+<text x="182" y="153.5" font-size="11" fill="#0b0b0b" text-anchor="end">kv_restore 16xQD2</text>
+<path d="M190.0,125.0 h430.9 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-430.9 z" fill="#2a78d6"/>
+<text x="630.9" y="136.5" font-size="10.5" fill="#52514e">6,523</text>
+<path d="M190.0,142.0 h404.0 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-404.0 z" fill="#eb6834"/>
+<text x="604.0" y="153.5" font-size="10.5" fill="#52514e">6,120</text>
+<path d="M190.0,159.0 h403.1 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-403.1 z" fill="#1baf7a"/>
+<text x="603.1" y="170.5" font-size="10.5" fill="#52514e">6,106</text>
+<text x="182" y="216.5" font-size="11" fill="#0b0b0b" text-anchor="end">rand 512K QD32</text>
+<path d="M190.0,188.0 h436.9 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-436.9 z" fill="#2a78d6"/>
+<text x="636.9" y="199.5" font-size="10.5" fill="#52514e">6,613</text>
+<path d="M190.0,205.0 h437.0 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-437.0 z" fill="#eb6834"/>
+<text x="637.0" y="216.5" font-size="10.5" fill="#52514e">6,615</text>
+<path d="M190.0,222.0 h437.0 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-437.0 z" fill="#1baf7a"/>
+<text x="637.0" y="233.5" font-size="10.5" fill="#52514e">6,615</text>
+<text x="182" y="279.5" font-size="11" fill="#0b0b0b" text-anchor="end">rand 4K QD16 (x10)</text>
+<path d="M190.0,251.0 h372.7 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-372.7 z" fill="#2a78d6"/>
+<text x="572.7" y="262.5" font-size="10.5" fill="#52514e">5,650</text>
+<path d="M190.0,268.0 h372.7 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-372.7 z" fill="#eb6834"/>
+<text x="572.7" y="279.5" font-size="10.5" fill="#52514e">5,650</text>
+<path d="M190.0,285.0 h364.0 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-364.0 z" fill="#1baf7a"/>
+<text x="564.0" y="296.5" font-size="10.5" fill="#52514e">5,520</text>
+<line x1="190" y1="56" x2="190" y2="318" stroke="#52514e"/>
+</svg>

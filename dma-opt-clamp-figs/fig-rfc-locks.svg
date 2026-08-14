@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="154" viewBox="0 0 760 154" font-family="system-ui, -apple-system, sans-serif">
+<rect width="760" height="154" fill="#fcfcfb" stroke="#e0dedb"/>
+<text x="20" y="28" font-size="14" font-weight="600" fill="#0b0b0b">iova_rbtree_lock contentions, 16x2MB storm, 60s (identical command counts)</text>
+<defs><pattern id="tex" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill-opacity="0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fcfcfb" stroke-width="2.5"/></pattern></defs>
+<line x1="190.0" y1="56" x2="190.0" y2="124" stroke="#eceae6"/>
+<text x="190.0" y="140" font-size="10" fill="#52514e" text-anchor="middle">0</text>
+<line x1="340.0" y1="56" x2="340.0" y2="124" stroke="#eceae6"/>
+<text x="340.0" y="140" font-size="10" fill="#52514e" text-anchor="middle">1,000</text>
+<line x1="490.0" y1="56" x2="490.0" y2="124" stroke="#eceae6"/>
+<text x="490.0" y="140" font-size="10" fill="#52514e" text-anchor="middle">2,000</text>
+<line x1="640.0" y1="56" x2="640.0" y2="124" stroke="#eceae6"/>
+<text x="640.0" y="140" font-size="10" fill="#52514e" text-anchor="middle">3,000</text>
+<text x="430" y="152" font-size="10" fill="#52514e" text-anchor="middle">contended acquisitions</text>
+<text x="182" y="73.5" font-size="11" fill="#0b0b0b" text-anchor="end">kopt-ls (stock allocator)</text>
+<path d="M190.0,62.0 h428.9 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-428.9 z" fill="#eb6834"/>
+<text x="628.9" y="73.5" font-size="10.5" fill="#52514e">2,886</text>
+<text x="182" y="102.5" font-size="11" fill="#0b0b0b" text-anchor="end">krfc-ls (per-domain rcache)</text>
+<rect x="190.0" y="91.0" width="2.4" height="15" fill-opacity="1" fill="#eb6834"/>
+<text x="198.4" y="102.5" font-size="10.5" fill="#52514e">16.00</text>
+<text x="241.4" y="102.5" font-size="10.5" font-weight="600" fill="#0b0b0b">180x fewer</text>
+<line x1="190" y1="56" x2="190" y2="124" stroke="#52514e"/>
+</svg>
