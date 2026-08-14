@@ -1,6 +1,7 @@
 # Benchmarking the per-domain rcache RFC: opt-in performance at stock defaults
 
-This document benchmarks the [6-patch per-domain IOVA rcache RFC](iova-feasibility.md)
+This document benchmarks the 6-patch per-domain IOVA rcache RFC
+([design rationale](iova-feasibility.md), [mechanism explained](rfc-mechanism.md))
 against both the baseline kernel and the 3-patch opt-in series, across every
 surface the original study measured: bare metal, three KVM topologies, the
 kvio real-stack engine, lock contention, and package energy. All data from
