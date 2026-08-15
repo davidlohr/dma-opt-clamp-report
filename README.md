@@ -582,6 +582,19 @@ appears to need the maple conversion *and* the raised transfer limit together.
 It is not yet confirmed on a fresh boot, and the analysis belongs with the
 maple comparison rather than here; flagged so it is not lost.
 
+### 7.10 The maple-tree conversion, benchmarked
+
+Rik van Riel's in-flight rbtree→maple-tree conversion of `iova.c` was
+benchmarked on the same rig against baseline, the opt-in series and the RFC
+([maple-tree.md](maple-tree.md)). It is behaviourally neutral at stock
+defaults, as designed, but under large transfers it makes each global-lock
+acquisition **2.5× more expensive** (2.09µs vs 0.85µs) with 2.2× the
+contentions and a 1.04ms worst-case wait, and it carries a reproducible 45%
+loss on 4K random reads when combined with a raised transfer limit. The two
+approaches are complementary — maple targets search complexity on fragmented
+domains, the rcache targets traffic volume — and a maple-backed allocator
+wants the cache more, not less.
+
 ## 8. Overall conclusions
 
 1. **The mechanism is verified end to end.** With the series opted in, requests

@@ -1,0 +1,179 @@
+# Benchmarking the IOVA maple-tree conversion
+
+[Rik van Riel's "convert iova to maple tree"](https://lore.kernel.org/all/20260624030853.2340880-1-riel@surriel.com/)
+(v4, June 2026, 3 patches) replaces the IOVA rbtree with a maple tree,
+motivated by production soft lockups at Meta: *"when enough CPUs at a time
+fall into the linear search trap, systems have been known to get stuck for so
+long that it causes soft lockups"*. It makes `alloc_iova()` O(log n) while
+keeping the other operations at their existing complexity.
+
+This document benchmarks it on the rig used throughout
+[this study](README.md), against the same reference points: baseline, the
+`max_sectors_kb` opt-in series, and the
+[per-domain rcache RFC](rfc-benchmarks.md).
+
+**Summary**: on this hardware the conversion is behaviourally neutral at
+stock defaults, as designed — but under the large-transfer workloads this
+study cares about it makes the global lock **more** expensive, not less:
+2.2× the contentions, 2.5× the hold time, and a worst-case wait of **1.04ms**
+against 11µs for the rbtree. It also carries a reproducible **45% loss on 4K
+random reads** when combined with a raised transfer limit. None of this
+contradicts the series' own goal — it targets search complexity on
+fragmented domains, which this rig does not reproduce — but it does mean the
+two approaches are not interchangeable, and that a maple-based allocator
+still needs the rcache to keep traffic off the tree.
+
+## Method
+
+One box (EPYC 9124 16C/32T, Samsung PM9A3 behind AMD-Vi in DMA-FQ mode,
+upstream v7.2-rc1 base), five kernels built from one config, ten verified
+boots:
+
+| kernel | patches | default transfer limit |
+|---|---|---|
+| `kbase` | none | 128K (the 3710e2b056cb clamp) |
+| `kopt` | 3-patch opt-in series | 128K, admin raises to 2MB |
+| `krfc` | 6-patch per-domain rcache RFC | 2MB, self-sized |
+| **`kmaple`** | **maple v4** | 128K |
+| **`kmaple-opt`** | **maple v4 + opt-in series** | 128K, admin raises to 2MB |
+
+Performance and energy came from clean kernels; lock tables from separate
+`CONFIG_LOCK_STAT` builds, never mixed. Every lock comparison is validated
+by `nvmeq->sq_lock` acquisition counts, so the arms are known to have issued
+the same number of device commands. Medians of n=3; preconditioned device,
+hugepage-backed buffers.
+
+## Throughput: neutral at defaults, neutral under the opt-in
+
+| case | kbase | kopt | krfc | **kmaple** | **kmaple-opt** |
+|---|---|---|---|---|---|
+| seq 2M QD8 | 6611 | 6099 | 6098 | **6610** | **6133** |
+| rand 2M QD8 | 6616 | 6090 | 6091 | **6616** | **6121** |
+| kv_restore (16×QD2×2M) | 6516 | 6090 | 6090 | **6518** | **6091** |
+| kv_restore p99 | 17.7ms | 10.9ms | 11.1ms | **18.2ms** | **11.1ms** |
+| rand 512K QD32 | 6613 | 6615 | 6615 | **6613** | **6616** |
+| **rand 4K QD16** | 565 | 563 | 563 | **559** | **313** |
+| kv_qos 4K victim p99 | 4.8ms | 21.6ms | 21.6ms | **4.8ms** | **21.9ms** |
+
+`kmaple` tracks `kbase` to within 0.1% on every case except 4K (−1%), which
+is the expected result: the conversion changes the tree, not the transfer
+limit, so at stock defaults everything still fits the rcache and the tree is
+barely touched. `kmaple-opt` tracks `kopt` on every large-transfer case
+(within 0.6%), including the PM9A3's at-MDTS dip and the halved kv_restore
+tail. The maple conversion neither helps nor hurts throughput here.
+
+The exception is 4K, below.
+
+## Lock behaviour: the tree gets more expensive, not less
+
+16 jobs × 2MB × QD8, 60s, lock_stat around the storm only. `iova_lock` is
+the maple series' rename of `iova_rbtree_lock`:
+
+![maple locks](dma-opt-clamp-figs/fig13-maple-locks.svg)
+
+| | device cmds | tree acq | tree cont | worst wait | avg hold |
+|---|---|---|---|---|---|
+| `kbase` (128K) | 3,461,183 | 45,959 | 1,293 | 61.3µs | 0.32µs |
+| `kmaple` (128K) | 3,459,047 | 45,304 | 2,181 | 57.6µs | **1.56µs** |
+| `kopt` (2MB) | 209,433 | 436,326 | 2,718 | 11.1µs | 0.85µs |
+| `kmaple-opt` (2MB) | 209,695 | 436,663 | **6,012** | **1038.8µs** | **2.09µs** |
+| `krfc` v2 (2MB) | 209,036 | 46,228* | **16*** | 2.6µs* | 0.42µs* |
+
+\* from the [RFC campaign](rfc-benchmarks.md) on the identical rig and
+workload; see the provenance note at the end.
+
+![hold time](dma-opt-clamp-figs/fig14-maple-holdtime.svg)
+
+Acquisition counts match between rbtree and maple arms — the conversion
+does not change *how often* the tree is touched, exactly as intended. What
+changes is the cost of each touch: **4.9× the hold time at 128K** (1.56µs vs
+0.32µs) and **2.5× at 2MB** (2.09µs vs 0.85µs), with contention rising in
+step (1.7× and 2.2×). The worst single wait under the 2MB storm is **1.04ms
+against 11µs** — a ~94× increase, and the kind of number that matters for the
+soft-lockup case the series is trying to fix.
+
+Two caveats, stated plainly. First, this rig's domains are not fragmented:
+the linear search the series exists to eliminate barely fires here, so this
+measures maple's *constant factors* on the paths that do run, not the
+pathology it targets. On a fragmented 32-bit space the trade could invert
+entirely. Second, `CONFIG_LOCK_STAT` instruments every acquisition and its
+overhead falls on hold time; it is applied identically to both arms, so the
+*ratio* is meaningful even if the absolute microseconds are inflated.
+
+The third row is the structural point: whatever the tree's per-operation
+cost, the RFC arm barely touches it — 16 contentions against 2,718 (rbtree)
+and 6,012 (maple) for the same 209K device commands. Optimizing the tree and
+removing the traffic are complementary, and on this workload removing the
+traffic dominates by two orders of magnitude.
+
+## The 4K regression
+
+![4K regression](dma-opt-clamp-figs/fig15-maple-4k.svg)
+
+`kmaple-opt` sustains **313 MiB/s on 4K random reads against 559–565 for
+every other kernel**, a 45% loss. It reproduced across two independent
+benchmark suites within the boot (throughput run: 318/312/313; energy run:
+median 312, n=6 total, tight spread), and it shows up in energy terms as
+102.6 J/GiB against ~56 — bad only because the bandwidth halved at unchanged
+package power.
+
+What narrows it down:
+
+- plain `kmaple` at stock limits is **unaffected** (559 MiB/s), so the maple
+  conversion alone is not responsible;
+- `kopt` — same raised limit, same 513-segment geometry, stock allocator —
+  is **unaffected** (563 MiB/s), so the raised limit alone is not either;
+- only the combination regresses.
+
+4K allocations are order-0 and always cached, so the tree should be off the
+path entirely; the plausible mechanism is depot churn at ~144K IOPS driving
+magazine flushes, whose per-entry erases are exactly the operations that got
+2.5× more expensive — but that is a hypothesis, not a measurement. The
+lookup-latency phase (per-call `avg_ns` for `alloc_iova_fast`/`free_iova_fast`
+via the ftrace function profiler) is queued to test it.
+
+**Not yet confirmed on a fresh boot.** Both observations come from one boot
+of `kmaple-opt`, so a boot-level confound cannot be excluded, though a
+confound that halves 4K throughput while leaving every other case within
+0.6% would be an odd one.
+
+## Energy
+
+Package RAPL, idle-floor corrected (see [§7.9](README.md)):
+`kmaple` matches `kbase` (4.91–4.98 J/GiB across large-I/O cases) and
+`kmaple-opt` matches `kopt` (5.04–5.44). Package power under load is
+48.4–49.9W on all five kernels. The only outlier is the 4K case above.
+
+## What this means for the two series
+
+They are complementary in intent and, on this evidence, unequal in effect
+for large-transfer storage:
+
+- The maple conversion addresses **search complexity** on fragmented
+  domains — a real production pathology, unreproduced on this rig, and not
+  something this study's workloads exercise.
+- The per-domain rcache addresses **traffic volume** — it keeps allocations
+  and, critically, flush-queue frees off the global lock entirely, which is
+  what the 16-vs-2,718-vs-6,012 comparison shows.
+- A maple-backed allocator *still wants* the rcache: maple's higher constant
+  factors make it more important, not less, that the hot path never reaches
+  the tree.
+- Mechanically the two conflict (both rewrite `iova.c` internals and the
+  maple series renames the lock); whoever lands second rebases.
+
+## Provenance and honesty notes
+
+- The `krfc` row in the lock table is from the earlier RFC campaign, not
+  this one. The reason is a defect this campaign found in *our own* series:
+  an intermediate revision refused to cache sub-4GB ranges to protect the
+  32-bit fail-fast bound, and because `iommu_dma_alloc_iova()` deliberately
+  fills the 32-bit space first, that sent essentially every IOVA back to the
+  rbtree — this campaign's `krfc` arm measured 435,811 acquisitions and 2,642
+  contentions, statistically identical to the unpatched opt-in kernel. The
+  posted RFC clears the bound from the insert path instead; the row quoted
+  above is the behaviour that design restores, measured on the same rig and
+  workload, and the corrected arm has not yet been re-measured.
+- `kmaple`/`kmaple-opt` were built from the v4 posting as-is, applied cleanly
+  to v7.2-rc1 alongside the opt-in series with no conflicts.
+- Raw data: `data/maple-bench-results.tgz` (all five kernels: throughput,
+  energy, lock tables, RAPL timelines).
