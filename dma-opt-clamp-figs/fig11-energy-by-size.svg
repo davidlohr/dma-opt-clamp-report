@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="212" viewBox="0 0 760 212" font-family="system-ui, -apple-system, sans-serif">
+<rect width="760" height="212" fill="#fcfcfb" stroke="#e0dedb"/>
+<text x="20" y="28" font-size="14" font-weight="600" fill="#0b0b0b">Bare metal: marginal package energy per GiB by request size</text>
+<defs><pattern id="tex" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill-opacity="0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fcfcfb" stroke-width="2.5"/></pattern></defs>
+<line x1="190.0" y1="56" x2="190.0" y2="182" stroke="#eceae6"/>
+<text x="190.0" y="198" font-size="10" fill="#52514e" text-anchor="middle">0</text>
+<line x1="267.4" y1="56" x2="267.4" y2="182" stroke="#eceae6"/>
+<text x="267.4" y="198" font-size="10" fill="#52514e" text-anchor="middle">10</text>
+<line x1="344.8" y1="56" x2="344.8" y2="182" stroke="#eceae6"/>
+<text x="344.8" y="198" font-size="10" fill="#52514e" text-anchor="middle">20</text>
+<line x1="422.3" y1="56" x2="422.3" y2="182" stroke="#eceae6"/>
+<text x="422.3" y="198" font-size="10" fill="#52514e" text-anchor="middle">30</text>
+<line x1="499.7" y1="56" x2="499.7" y2="182" stroke="#eceae6"/>
+<text x="499.7" y="198" font-size="10" fill="#52514e" text-anchor="middle">40</text>
+<line x1="577.1" y1="56" x2="577.1" y2="182" stroke="#eceae6"/>
+<text x="577.1" y="198" font-size="10" fill="#52514e" text-anchor="middle">50</text>
+<line x1="654.5" y1="56" x2="654.5" y2="182" stroke="#eceae6"/>
+<text x="654.5" y="198" font-size="10" fill="#52514e" text-anchor="middle">60</text>
+<text x="430" y="210" font-size="10" fill="#52514e" text-anchor="middle">J/GiB (idle floor subtracted) - lower is better</text>
+<text x="182" y="73.5" font-size="11" fill="#0b0b0b" text-anchor="end">4K random</text>
+<path d="M190.0,62.0 h424.9 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-424.9 z" fill="#2a78d6"/>
+<text x="624.9" y="73.5" font-size="10.5" fill="#52514e">55.40</text>
+<text x="667.9" y="73.5" font-size="10.5" font-weight="600" fill="#0b0b0b">11x worse per byte</text>
+<text x="182" y="102.5" font-size="11" fill="#0b0b0b" text-anchor="end">512K random</text>
+<path d="M190.0,91.0 h34.1 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-34.1 z" fill="#2a78d6"/>
+<text x="234.1" y="102.5" font-size="10.5" fill="#52514e">4.92</text>
+<text x="182" y="131.5" font-size="11" fill="#0b0b0b" text-anchor="end">2M sequential</text>
+<path d="M190.0,120.0 h34.0 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-34.0 z" fill="#2a78d6"/>
+<text x="234.0" y="131.5" font-size="10.5" fill="#52514e">4.91</text>
+<text x="182" y="160.5" font-size="11" fill="#0b0b0b" text-anchor="end">KV restore (2M x16)</text>
+<path d="M190.0,149.0 h34.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-34.6 z" fill="#2a78d6"/>
+<text x="234.6" y="160.5" font-size="10.5" fill="#52514e">4.98</text>
+<line x1="190" y1="56" x2="190" y2="182" stroke="#52514e"/>
+</svg>

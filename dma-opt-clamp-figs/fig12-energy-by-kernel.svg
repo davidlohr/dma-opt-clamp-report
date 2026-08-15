@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="411" viewBox="0 0 760 411" font-family="system-ui, -apple-system, sans-serif">
+<rect width="760" height="411" fill="#fcfcfb" stroke="#e0dedb"/>
+<text x="20" y="28" font-size="14" font-weight="600" fill="#0b0b0b">Bare metal: energy per GiB is set by the drive, not the kernel</text>
+<defs><pattern id="tex" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill-opacity="0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fcfcfb" stroke-width="2.5"/></pattern></defs>
+<rect x="190" y="40" width="10" height="10" rx="2" fill="#2a78d6"/>
+<text x="205" y="49" font-size="11" fill="#52514e">seq 2M</text>
+<rect x="270.2" y="40" width="10" height="10" rx="2" fill="#eb6834"/>
+<text x="285.2" y="49" font-size="11" fill="#52514e">rand 512K</text>
+<rect x="372.0" y="40" width="10" height="10" rx="2" fill="#1baf7a"/>
+<text x="387.0" y="49" font-size="11" fill="#52514e">kv_restore</text>
+<line x1="190.0" y1="56" x2="190.0" y2="381" stroke="#eceae6"/>
+<text x="190.0" y="397" font-size="10" fill="#52514e" text-anchor="middle">0</text>
+<line x1="337.7" y1="56" x2="337.7" y2="381" stroke="#eceae6"/>
+<text x="337.7" y="397" font-size="10" fill="#52514e" text-anchor="middle">2</text>
+<line x1="485.4" y1="56" x2="485.4" y2="381" stroke="#eceae6"/>
+<text x="485.4" y="397" font-size="10" fill="#52514e" text-anchor="middle">4</text>
+<line x1="633.1" y1="56" x2="633.1" y2="381" stroke="#eceae6"/>
+<text x="633.1" y="397" font-size="10" fill="#52514e" text-anchor="middle">6</text>
+<text x="430" y="409" font-size="10" fill="#52514e" text-anchor="middle">J/GiB (idle floor subtracted)</text>
+<text x="182" y="90.5" font-size="11" fill="#0b0b0b" text-anchor="end">kbase</text>
+<path d="M190.0,62.0 h358.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-358.6 z" fill="#2a78d6"/>
+<text x="558.6" y="73.5" font-size="10.5" fill="#52514e">4.91</text>
+<path d="M190.0,79.0 h359.3 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-359.3 z" fill="#eb6834"/>
+<text x="559.3" y="90.5" font-size="10.5" fill="#52514e">4.92</text>
+<path d="M190.0,96.0 h363.8 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-363.8 z" fill="#1baf7a"/>
+<text x="563.8" y="107.5" font-size="10.5" fill="#52514e">4.98</text>
+<text x="182" y="153.5" font-size="11" fill="#0b0b0b" text-anchor="end">kopt</text>
+<path d="M190.0,125.0 h395.5 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-395.5 z" fill="#2a78d6"/>
+<text x="595.5" y="136.5" font-size="10.5" fill="#52514e">5.41</text>
+<path d="M190.0,142.0 h366.0 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-366.0 z" fill="#eb6834"/>
+<text x="566.0" y="153.5" font-size="10.5" fill="#52514e">5.01</text>
+<path d="M190.0,159.0 h394.8 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-394.8 z" fill="#1baf7a"/>
+<text x="594.8" y="170.5" font-size="10.5" fill="#52514e">5.40</text>
+<text x="182" y="216.5" font-size="11" fill="#0b0b0b" text-anchor="end">krfc</text>
+<path d="M190.0,188.0 h398.5 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-398.5 z" fill="#2a78d6"/>
+<text x="598.5" y="199.5" font-size="10.5" fill="#52514e">5.45</text>
+<path d="M190.0,205.0 h367.4 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-367.4 z" fill="#eb6834"/>
+<text x="567.4" y="216.5" font-size="10.5" fill="#52514e">5.03</text>
+<path d="M190.0,222.0 h400.7 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-400.7 z" fill="#1baf7a"/>
+<text x="600.7" y="233.5" font-size="10.5" fill="#52514e">5.48</text>
+<text x="182" y="279.5" font-size="11" fill="#0b0b0b" text-anchor="end">kmaple</text>
+<path d="M190.0,251.0 h358.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-358.6 z" fill="#2a78d6"/>
+<text x="558.6" y="262.5" font-size="10.5" fill="#52514e">4.91</text>
+<path d="M190.0,268.0 h359.3 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-359.3 z" fill="#eb6834"/>
+<text x="559.3" y="279.5" font-size="10.5" fill="#52514e">4.92</text>
+<path d="M190.0,285.0 h363.8 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-363.8 z" fill="#1baf7a"/>
+<text x="563.8" y="296.5" font-size="10.5" fill="#52514e">4.98</text>
+<text x="182" y="342.5" font-size="11" fill="#0b0b0b" text-anchor="end">kmaple-opt</text>
+<path d="M190.0,314.0 h397.7 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-397.7 z" fill="#2a78d6"/>
+<text x="597.7" y="325.5" font-size="10.5" fill="#52514e">5.44</text>
+<path d="M190.0,331.0 h368.2 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-368.2 z" fill="#eb6834"/>
+<text x="568.2" y="342.5" font-size="10.5" fill="#52514e">5.04</text>
+<path d="M190.0,348.0 h397.7 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-397.7 z" fill="#1baf7a"/>
+<text x="597.7" y="359.5" font-size="10.5" fill="#52514e">5.44</text>
+<line x1="190" y1="56" x2="190" y2="381" stroke="#52514e"/>
+</svg>

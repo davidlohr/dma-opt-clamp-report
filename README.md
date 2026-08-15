@@ -503,6 +503,85 @@ tolerated (180× fewer contended acquisitions than the opted-in stock
 allocator at identical command counts). Full write-up:
 [rfc-benchmarks.md](rfc-benchmarks.md).
 
+## 7.9 Energy profile
+
+Energy was measured on two surfaces with the same method and they tell
+opposite stories — which turns out to be the useful result.
+
+**Method.** The CPU package energy counter
+(`/sys/class/powercap/intel-rapl:0/energy_uj`, RAPL-compatible on this EPYC)
+is read before and after each 30s case; the counter integrates in hardware, so
+endpoint sampling is exact and wraparound is handled explicitly. A 2Hz sampler
+records the power timeline alongside. Marginal energy is
+`(ΔE − idle_W × Δt) / GiB`, with the idle floor taken from the **quietest 5s
+window of each boot's own timeline** rather than a fixed post-boot window —
+the naive version is contaminated by boot settling and produced a negative
+marginal figure on one kernel before the correction. Scope: **CPU package
+only** — interrupt, completion, block-layer and IOMMU work, plus the
+memory-controller side of data movement. It does not see the SSD, fans, or PSU,
+so these are CPU-side efficiency numbers, not wall power.
+
+### Bare metal: request size dominates, the kernel does not
+
+![energy by request size](dma-opt-clamp-figs/fig11-energy-by-size.svg)
+
+Medians of n=3, baseline kernel, preconditioned PM9A3:
+
+| case | bandwidth | package W | marginal J/GiB |
+|---|---|---|---|
+| 4K random QD16 | 565 MiB/s | 48.8 | **55.4** |
+| 512K random QD32 | 6613 MiB/s | 49.9 | **4.92** |
+| 2M sequential QD8 | 6610 MiB/s | 49.8 | **4.91** |
+| KV restore (16×QD2×2M) | 6511 MiB/s | 49.8 | **4.98** |
+
+Moving a gigabyte in 4KB pieces costs **11× the CPU energy** of moving it in
+512KB pieces. That is the whole bare-metal energy story, and it is a
+request-size effect, not a kernel-configuration one.
+
+![energy by kernel](dma-opt-clamp-figs/fig12-energy-by-kernel.svg)
+
+Across all five kernels measured in the RFC and maple campaigns — baseline,
+the opt-in series, the per-domain rcache RFC, the maple-tree conversion, and
+maple plus the series — package power under load sits at **48.4–49.9 W**
+regardless, and marginal energy lands between 4.9 and 5.5 J/GiB for every
+large-I/O case. The small spread that does exist is not an allocator effect:
+kernels that issue MDTS-sized commands draw the same watts but deliver ~8%
+less bandwidth on this drive (§7.1), so the same joules cover fewer bytes.
+Energy per byte here is a property of the drive and the request size; the
+allocator and the transfer limit are invisible in it.
+
+### Virtualized: the opposite result, and why
+
+The shadow-vIOMMU sweep (§7.3, fig6) measured baseline at a flat **~49 J/GiB
+at every block size**, and the opt-in at 44.2 / 41.8 / 40.5 J/GiB for
+256K/512K/1M — then **5.4 J/GiB at 2MB**, a 9× drop at the superpage cliff.
+
+The contrast with bare metal is the point. Under a shadow vIOMMU the CPU is
+doing per-4K shadow page-table maintenance, and that work *is* the energy:
+removing it (one superpage mapping instead of 512 PTE syncs) removes 90% of
+the joules per byte. On bare metal there is no such work — data movement
+dominates the package, the per-command savings are real but below RAPL's
+resolution at these rates, and energy per byte barely moves.
+
+**So the energy case for large requests is a virtualization and CPU-headroom
+argument, not a bare-metal wall-power one.** Where it does apply it is large:
+9× per byte in the guest. Where it does not, the earlier CPU findings still
+stand on their own terms — −72% streaming sys-time through stacked storage
+paths (§7.6) returns cores to the application, which is worth having even when
+the socket draws the same power.
+
+### An outlier worth naming
+
+One configuration broke the pattern: **maple-tree + the opt-in limit**
+(`kmaple-opt`) measured **313 MiB/s on 4K random reads against ~563 for every
+other kernel**, and correspondingly **102.6 J/GiB against ~56** — the energy
+number is bad only because the bandwidth halved at unchanged power. It
+reproduced across two independent benchmark suites (n=6 total) within that
+boot, while plain `kmaple` at stock limits is unaffected (559 MiB/s), so it
+appears to need the maple conversion *and* the raised transfer limit together.
+It is not yet confirmed on a fresh boot, and the analysis belongs with the
+maple comparison rather than here; flagged so it is not lost.
+
 ## 8. Overall conclusions
 
 1. **The mechanism is verified end to end.** With the series opted in, requests
