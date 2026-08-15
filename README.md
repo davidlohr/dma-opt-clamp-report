@@ -589,8 +589,9 @@ benchmarked on the same rig against baseline, the opt-in series and the RFC
 ([maple-tree.md](maple-tree.md)). It is behaviourally neutral at stock
 defaults, as designed, but under large transfers it makes each global-lock
 acquisition **2.5× more expensive** (2.09µs vs 0.85µs) with 2.2× the
-contentions and a 1.04ms worst-case wait, and it carries a reproducible 45%
-loss on 4K random reads when combined with a raised transfer limit. The two
+contentions and a 1.04ms worst-case wait, A 45% 4K loss seen in the campaign suite did not
+reproduce under a dedicated fresh-boot investigation and is not attributed to
+the conversion. The two
 approaches are complementary — maple targets search complexity on fragmented
 domains, the rcache targets traffic volume — and a maple-backed allocator
 wants the cache more, not less.

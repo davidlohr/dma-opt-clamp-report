@@ -16,8 +16,9 @@ This document benchmarks it on the rig used throughout
 stock defaults, as designed — but under the large-transfer workloads this
 study cares about it makes the global lock **more** expensive, not less:
 2.2× the contentions, 2.5× the hold time, and a worst-case wait of **1.04ms**
-against 11µs for the rbtree. It also carries a reproducible **45% loss on 4K
-random reads** when combined with a raised transfer limit. None of this
+against 11µs for the rbtree. A 45% loss on 4K random reads seen in the
+campaign suite did **not** reproduce under a dedicated investigation and is
+not attributed to the conversion (see below). None of this
 contradicts the series' own goal — it targets search complexity on
 fragmented domains, which this rig does not reproduce — but it does mean the
 two approaches are not interchangeable, and that a maple-based allocator
@@ -143,36 +144,56 @@ inflates all absolute figures equally, so ratios are the meaningful part;
 averages include time spent waiting for the global lock, so they blend
 per-operation cost with contention.
 
-## The 4K regression
+## The 4K anomaly: measured, investigated, not reproduced
 
-![4K regression](dma-opt-clamp-figs/fig15-maple-4k.svg)
+![4K anomaly](dma-opt-clamp-figs/fig15-maple-4k.svg)
 
-`kmaple-opt` sustains **313 MiB/s on 4K random reads against 559–565 for
-every other kernel**, a 45% loss. It reproduced across two independent
-benchmark suites within the boot (throughput run: 318/312/313; energy run:
-median 312, n=6 total, tight spread), and it shows up in energy terms as
-102.6 J/GiB against ~56 — bad only because the bandwidth halved at unchanged
-package power.
+In the campaign suite `kmaple-opt` sustained **313 MiB/s on 4K random reads
+against 559–565 for every other kernel**, reproducing across two independent
+benchmark suites within that boot (throughput run 318/312/313, energy run
+median 312) and showing up in energy terms as 102.6 J/GiB against ~56 — bad
+only because the bandwidth halved at unchanged package power.
 
-What narrows it down:
+A dedicated investigation **failed to reproduce it**, and the honest reading
+is that it is not (yet) a maple defect.
 
-- plain `kmaple` at stock limits is **unaffected** (559 MiB/s), so the maple
-  conversion alone is not responsible;
-- `kopt` — same raised limit, same 513-segment geometry, stock allocator —
-  is **unaffected** (563 MiB/s), so the raised limit alone is not either;
-- only the combination regresses.
+Four kernels were rebooted and run through a three-phase protocol — 4K
+immediately after boot before any large I/O ("cold"), then the standard 2MB
+storm to dirty the allocator, then 4K again ("warm") — with the ftrace
+function profiler over the IOVA entry points and the depot reaper:
 
-4K allocations are order-0 and always cached, so the tree should be off the
-path entirely; the plausible mechanism is depot churn at ~144K IOPS driving
-magazine flushes, whose per-entry erases are exactly the operations that got
-2.5× more expensive — but that is a hypothesis, not a measurement. The
-lookup-latency phase (per-call `avg_ns` for `alloc_iova_fast`/`free_iova_fast`
-via the ftrace function profiler) is queued to test it.
+| kernel | cold | warm |
+|---|---|---|
+| `kmaple-opt` | 128,805 IOPS / 503 MiB/s | 128,612 / 502 |
+| `kopt` | 129,786 / 507 | 129,291 / 505 |
+| `kmaple` | 128,510 / 502 | 130,015 / 508 |
+| `kbase` | 128,441 / 502 | 128,680 / 503 |
 
-**Not yet confirmed on a fresh boot.** Both observations come from one boot
-of `kmaple-opt`, so a boot-level confound cannot be excluded, though a
-confound that halves 4K throughput while leaving every other case within
-0.6% would be an odd one.
+No kernel differs from any other, and cold equals warm everywhere — which
+also disproves the leading hypothesis, that the regression was an order
+effect from allocator state left behind by the preceding large-I/O cases.
+
+The per-call profile agrees: at 4K both `kopt` and `kmaple-opt` spend
+405–415 ns in `alloc_iova_fast` and 193 ns in `free_iova_fast`, with the
+slow path taken on only 0.12% of operations (≈5,000 of 4.25M). At that hit
+rate the tree implementation cannot matter — and where it *is* taken, maple
+is the faster of the two here (1336 ns vs 4363 ns per `alloc_iova`), the
+opposite of its behaviour under the 2MB storm above, because the tree holds
+very different content in the two cases.
+
+One harness difference remains between the suites that saw the regression
+and the investigation that did not: the campaign suites ran 4K with
+`--iomem=mmaphuge`, the investigation with default `malloc` buffers. A
+buffer-type isolation (malloc vs mmaphuge vs mmap, same kernel, same
+everything else) is queued to close that out. Until it lands, the position
+is: **the original measurement is real but unexplained, the effect does not
+reproduce under a fresh boot with page-backed buffers, and nothing here
+supports attributing it to the maple conversion.**
+
+Two process notes: the investigation booted the *clean* kernels, which carry
+no `CONFIG_LOCK_STAT`, so the lock columns of that run are empty; and `perf`
+was unavailable on those boots, so the symbol profiles planned for this
+section were not captured. The ftrace profiler carried the analysis instead.
 
 ## Energy
 
