@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="183" viewBox="0 0 760 183" font-family="system-ui, -apple-system, sans-serif">
+<rect width="760" height="183" fill="#fcfcfb" stroke="#e0dedb"/>
+<text x="20" y="28" font-size="14" font-weight="600" fill="#0b0b0b">IOVA lookup cost per I/O (alloc + free, ftrace function profiler)</text>
+<defs><pattern id="tex" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill-opacity="0"/><line x1="0" y1="0" x2="0" y2="6" stroke="#fcfcfb" stroke-width="2.5"/></pattern></defs>
+<line x1="190.0" y1="56" x2="190.0" y2="153" stroke="#eceae6"/>
+<text x="190.0" y="169" font-size="10" fill="#52514e" text-anchor="middle">0</text>
+<line x1="272.8" y1="56" x2="272.8" y2="153" stroke="#eceae6"/>
+<text x="272.8" y="169" font-size="10" fill="#52514e" text-anchor="middle">1,000</text>
+<line x1="355.5" y1="56" x2="355.5" y2="153" stroke="#eceae6"/>
+<text x="355.5" y="169" font-size="10" fill="#52514e" text-anchor="middle">2,000</text>
+<line x1="438.3" y1="56" x2="438.3" y2="153" stroke="#eceae6"/>
+<text x="438.3" y="169" font-size="10" fill="#52514e" text-anchor="middle">3,000</text>
+<line x1="521.0" y1="56" x2="521.0" y2="153" stroke="#eceae6"/>
+<text x="521.0" y="169" font-size="10" fill="#52514e" text-anchor="middle">4,000</text>
+<line x1="603.8" y1="56" x2="603.8" y2="153" stroke="#eceae6"/>
+<text x="603.8" y="169" font-size="10" fill="#52514e" text-anchor="middle">5,000</text>
+<text x="430" y="181" font-size="10" fill="#52514e" text-anchor="middle">nanoseconds per I/O (alloc_iova_fast + free_iova_fast)</text>
+<text x="182" y="73.5" font-size="11" fill="#0b0b0b" text-anchor="end">cached (128K, kbase)</text>
+<path d="M190.0,62.0 h54.8 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-54.8 z" fill="#2a78d6"/>
+<text x="254.8" y="73.5" font-size="10.5" fill="#52514e">710</text>
+<text x="283.8" y="73.5" font-size="10.5" font-weight="600" fill="#0b0b0b">4.7x cheaper</text>
+<text x="182" y="102.5" font-size="11" fill="#0b0b0b" text-anchor="end">uncached rbtree (2M, kopt)</text>
+<path d="M190.0,91.0 h274.8 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-274.8 z" fill="#2a78d6"/>
+<text x="474.8" y="102.5" font-size="10.5" fill="#52514e">3,369</text>
+<text x="182" y="131.5" font-size="11" fill="#0b0b0b" text-anchor="end">uncached maple (2M, kmaple-opt)</text>
+<path d="M190.0,120.0 h419.6 a4,4 0 0 1 4,4 v7 a4,4 0 0 1 -4,4 h-419.6 z" fill="#2a78d6"/>
+<text x="619.6" y="131.5" font-size="10.5" fill="#52514e">5,119</text>
+<text x="662.6" y="131.5" font-size="10.5" font-weight="600" fill="#0b0b0b">+52% vs rbtree</text>
+<line x1="190" y1="56" x2="190" y2="153" stroke="#52514e"/>
+</svg>

@@ -106,6 +106,43 @@ and 6,012 (maple) for the same 209K device commands. Optimizing the tree and
 removing the traffic are complementary, and on this workload removing the
 traffic dominates by two orders of magnitude.
 
+## Lookup latency: what each path actually costs per call
+
+The ftrace function profiler was run over the same 16×2MB storm with a filter
+on the four entry points, giving per-call averages and hit counts:
+
+![lookup latency](dma-opt-clamp-figs/fig16-lookup-latency.svg)
+
+| kernel | `alloc_iova_fast` | `free_iova_fast` | per I/O | slow path taken |
+|---|---|---|---|---|
+| `kbase` (128K, cached) | 422 ns | 288 ns | **710 ns** | 0.2% |
+| `kopt` (2MB, rbtree) | 2295 ns | 1074 ns | **3369 ns** | 99.0% |
+| `kmaple-opt` (2MB, maple) | 3055 ns | 2064 ns | **5119 ns** | 98.9% |
+
+The hit-rate column is the mechanism in one number: at 128K the cache serves
+99.8% of allocations (8,173 slow-path calls out of 3.45M), while at 2MB
+without cache coverage 99% of them reach the tree. **A cached lookup costs
+710 ns per I/O against 3369 ns uncached — 4.7× cheaper**, or about 2.66 µs of
+CPU returned per I/O, ~535 ms of CPU time over this 60-second storm.
+
+Isolating the tree implementations on their own calls:
+
+| slow-path call | rbtree | maple | |
+|---|---|---|---|
+| `alloc_iova` | 1828 ns | 2629 ns | **+44%** |
+| `free_iova` | 831 ns | 1842 ns | **+122%** |
+
+This is an independent confirmation of the lock_stat result above, measured a
+different way: maple's erase path costs more than twice the rbtree's on this
+workload, and its allocation path 44% more, adding ~361 ms of CPU time over
+the same storm. The `free_iova` figure is the one that matters most for the
+original lockup, since that is the path flush-queue timers drive.
+
+Caveats: the profiler adds a fixed per-call overhead (tens of ns) that
+inflates all absolute figures equally, so ratios are the meaningful part;
+averages include time spent waiting for the global lock, so they blend
+per-operation cost with contention.
+
 ## The 4K regression
 
 ![4K regression](dma-opt-clamp-figs/fig15-maple-4k.svg)
