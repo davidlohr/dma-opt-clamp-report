@@ -59,13 +59,46 @@ All in `drivers/iommu/iova.c` unless noted:
 - **Cached PFNs stay resident in the rbtree** (the magazine free looks
   them up by PFN and would WARN otherwise), so cache capacity also sets
   tree depth for whoever does take the slow path.
-- **Traffic shape**: one IOVA allocation per *request* — and this was true
-  in the scatterlist era too (`iommu_dma_map_sg()` allocated one IOVA per
-  sg list). The two-step DMA API did not reduce per-request allocations;
-  what it universalized is the single-alloc pattern and lower per-request
-  CPU cost. The clamp's real benefit was never alloc *count* — it was
-  keeping every allocation *inside the cacheable size range*. Corollary:
-  larger requests mean strictly fewer allocations per byte moved.
+- **Traffic shape**: one IOVA allocation and one free per *request*, in
+  both the scatterlist and two-step eras. Verified in the code rather
+  than assumed:
+
+  - *Before* (`393cf700e624^`): `iommu_dma_map_sg()` accumulates every
+    segment into `iova_len` and makes a single `iommu_dma_alloc_iova()`
+    call for the whole list, followed by one `iommu_map_sg()`;
+    `iommu_dma_unmap_sg()` computes `start`/`end` across the list and
+    calls `__iommu_dma_unmap()` once, so one `iommu_dma_free_iova()`.
+  - *After*: `blk_dma_map_iter_start()` calls `dma_iova_try_alloc()` once
+    for `total_len` and then only `dma_iova_link()` per segment — no
+    further IOVA allocations — and `blk_rq_dma_unmap()` →
+    `dma_iova_destroy()` frees once.
+
+  So the two-step API did **not** reduce per-request allocator traffic;
+  what it removed is the sg-table build and per-segment bookkeeping, i.e.
+  CPU cost, not rbtree pressure. The clamp's real benefit was never alloc
+  *count* — it was keeping every allocation *inside the cacheable size
+  range*. Corollary: larger requests mean strictly fewer allocations per
+  byte moved, in either era.
+
+  Both eras also keep a **per-segment fallback**, which is where
+  allocator traffic can multiply. Before, it was bounce buffering
+  (`dev_use_sg_swiotlb()` → `iommu_dma_map_sg_swiotlb()`, one
+  `dma_map_page()` per segment). Now it is `blk_dma_map_direct()`, taken
+  when `dma_iova_try_alloc()` fails *or* when
+
+      blk_can_dma_map_iova() == !(req_phys_gap_mask(req) &
+                                  dma_get_merge_boundary(dma_dev))
+
+  is false — that is, when the request carries physical gaps finer than
+  the IOMMU granule. PRP-only NVMe controllers run with
+  `virt_boundary_mask = NVME_CTRL_PAGE_SIZE - 1`, so their requests are
+  gap-free and always take the single-allocation path; SGL-capable
+  controllers run with `virt_boundary_mask = 0`, so the block layer may
+  merge sub-page-gapped segments and such a request falls back to **one
+  IOVA allocation per segment**. That is the one case where the current
+  code can generate more allocator traffic than the scatterlist path
+  did, since `iommu_dma_map_sg()` handled gaps by padding rather than by
+  splitting.
 - **Sharding**: one domain per IOMMU group. A direct-attached NVMe with
   ACS gets its own domain, its own lock, its own caches. The
   counterexamples that matter: **VMD** (every drive behind the endpoint
