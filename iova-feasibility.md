@@ -97,8 +97,9 @@ All in `drivers/iommu/iova.c` unless noted:
   merge sub-page-gapped segments and such a request falls back to **one
   IOVA allocation per segment**. That is the one case where the current
   code can generate more allocator traffic than the scatterlist path
-  did, since `iommu_dma_map_sg()` handled gaps by padding rather than by
-  splitting.
+  did, since `iommu_dma_map_sg()` absorbed gaps with its `pad_len` logic
+  inside the one `iova_len` allocation rather than splitting the
+  request.
 - **Sharding**: one domain per IOMMU group. A direct-attached NVMe with
   ACS gets its own domain, its own lock, its own caches. The
   counterexamples that matter: **VMD** (every drive behind the endpoint
